@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Plus, Pencil, Trash2, ShoppingCart } from "lucide-react";
 import { deleteTicketType } from "@/lib/actions/ticket-types";
 import { INITIAL_ACTION_STATE } from "@/lib/actions/action-state";
 import type { TicketTypeRow } from "@/lib/organizer";
@@ -81,6 +82,11 @@ function TicketTypeManager({ eventId, ticketTypes }: { eventId: string; ticketTy
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
+                <Button type="button" size="icon" variant="ghost" aria-label="Ver como comprador" asChild>
+                  <Link href={`/comprar/${t.id}`} target="_blank">
+                    <ShoppingCart className="size-4" />
+                  </Link>
+                </Button>
                 <Button type="button" size="icon" variant="ghost" aria-label="Editar" onClick={() => openEdit(t)}>
                   <Pencil className="size-4" />
                 </Button>

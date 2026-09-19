@@ -80,6 +80,67 @@ export type Database = {
           },
         ];
       };
+      orders: {
+        Row: {
+          buyer_id: string;
+          created_at: string;
+          event_id: string;
+          expires_at: string | null;
+          id: string;
+          quantity: number;
+          status: Database["public"]["Enums"]["order_status"];
+          ticket_type_id: string;
+          unit_price: number;
+          updated_at: string;
+        };
+        Insert: {
+          buyer_id: string;
+          created_at?: string;
+          event_id: string;
+          expires_at?: string | null;
+          id?: string;
+          quantity: number;
+          status?: Database["public"]["Enums"]["order_status"];
+          ticket_type_id: string;
+          unit_price: number;
+          updated_at?: string;
+        };
+        Update: {
+          buyer_id?: string;
+          created_at?: string;
+          event_id?: string;
+          expires_at?: string | null;
+          id?: string;
+          quantity?: number;
+          status?: Database["public"]["Enums"]["order_status"];
+          ticket_type_id?: string;
+          unit_price?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "orders_buyer_id_fkey";
+            columns: ["buyer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "orders_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "orders_ticket_type_id_fkey";
+            columns: ["ticket_type_id"];
+            isOneToOne: false;
+            referencedRelation: "ticket_types";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       organizer_profiles: {
         Row: {
           bio: string;
@@ -192,12 +253,164 @@ export type Database = {
           },
         ];
       };
+      tickets: {
+        Row: {
+          created_at: string;
+          encrypted_token: string | null;
+          event_id: string;
+          id: string;
+          order_id: string;
+          owner_id: string;
+          secure_token_hash: string;
+          serial: string;
+          status: Database["public"]["Enums"]["ticket_status"];
+          ticket_type_id: string;
+          updated_at: string;
+          used_at: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          encrypted_token?: string | null;
+          event_id: string;
+          id?: string;
+          order_id: string;
+          owner_id: string;
+          secure_token_hash: string;
+          serial: string;
+          status?: Database["public"]["Enums"]["ticket_status"];
+          ticket_type_id: string;
+          updated_at?: string;
+          used_at?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          encrypted_token?: string | null;
+          event_id?: string;
+          id?: string;
+          order_id?: string;
+          owner_id?: string;
+          secure_token_hash?: string;
+          serial?: string;
+          status?: Database["public"]["Enums"]["ticket_status"];
+          ticket_type_id?: string;
+          updated_at?: string;
+          used_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tickets_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tickets_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tickets_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tickets_ticket_type_id_fkey";
+            columns: ["ticket_type_id"];
+            isOneToOne: false;
+            referencedRelation: "ticket_types";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      cancel_order: {
+        Args: { p_order_id: string };
+        Returns: {
+          buyer_id: string;
+          created_at: string;
+          event_id: string;
+          expires_at: string | null;
+          id: string;
+          quantity: number;
+          status: Database["public"]["Enums"]["order_status"];
+          ticket_type_id: string;
+          unit_price: number;
+          updated_at: string;
+        };
+      };
+      check_ticket_token: {
+        Args: { p_raw_token: string };
+        Returns: {
+          created_at: string;
+          encrypted_token: string | null;
+          event_id: string;
+          id: string;
+          order_id: string;
+          owner_id: string;
+          secure_token_hash: string;
+          serial: string;
+          status: Database["public"]["Enums"]["ticket_status"];
+          ticket_type_id: string;
+          updated_at: string;
+          used_at: string | null;
+        };
+      };
+      confirm_order: {
+        Args: { p_order_id: string };
+        Returns: {
+          raw_token: string;
+          serial: string;
+          ticket_id: string;
+        }[];
+      };
+      get_ticket_qr_payload: {
+        Args: { p_ticket_id: string };
+        Returns: string;
+      };
+      reserve_tickets: {
+        Args: { p_quantity: number; p_ticket_type_id: string };
+        Returns: {
+          buyer_id: string;
+          created_at: string;
+          event_id: string;
+          expires_at: string | null;
+          id: string;
+          quantity: number;
+          status: Database["public"]["Enums"]["order_status"];
+          ticket_type_id: string;
+          unit_price: number;
+          updated_at: string;
+        };
+      };
+      set_ticket_status_by_organizer: {
+        Args: {
+          p_new_status: Database["public"]["Enums"]["ticket_status"];
+          p_ticket_id: string;
+        };
+        Returns: {
+          created_at: string;
+          encrypted_token: string | null;
+          event_id: string;
+          id: string;
+          order_id: string;
+          owner_id: string;
+          secure_token_hash: string;
+          serial: string;
+          status: Database["public"]["Enums"]["ticket_status"];
+          ticket_type_id: string;
+          updated_at: string;
+          used_at: string | null;
+        };
+      };
     };
     Enums: {
       event_category:
@@ -212,6 +425,8 @@ export type Database = {
         | "comunidad"
         | "otros";
       event_status: "borrador" | "publicado" | "pausado" | "cancelado";
+      order_status: "pendiente" | "pagado" | "expirado" | "cancelado";
+      ticket_status: "active" | "used" | "cancelled" | "refunded" | "expired";
       user_role: "asistente" | "organizador" | "admin";
     };
     CompositeTypes: {

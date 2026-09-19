@@ -5,7 +5,7 @@ import type { Database } from "@/lib/supabase/database.types";
 type UserRole = Database["public"]["Enums"]["user_role"];
 
 /** Rutas que requieren sesión, sin importar el rol. */
-const PROTECTED_PREFIXES = ["/cuenta"];
+const PROTECTED_PREFIXES = ["/cuenta", "/comprar", "/ordenes", "/tickets", "/mis-tickets"];
 
 /** Rutas que requieren sesión + un rol específico. */
 const ROLE_PREFIXES: { prefix: string; roles: UserRole[] }[] = [
