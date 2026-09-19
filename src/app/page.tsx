@@ -1,8 +1,11 @@
 import { Ticket, MapPin } from "lucide-react";
-import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
+import { Navbar, NavbarInner, NavbarBrand, NavbarActions } from "@/components/ui/navbar";
+import { NavbarAuthActions } from "@/components/auth/navbar-auth-actions";
 import { DemoDataBanner } from "@/components/discover/demo-data-banner";
 import { EventDiscovery } from "@/components/discover/event-discovery";
 import { getFeaturedEvents, getUpcomingEvents } from "@/data/events";
+
+export const dynamic = "force-dynamic";
 
 export default function Home() {
   const featuredEvents = getFeaturedEvents();
@@ -18,6 +21,9 @@ export default function Home() {
             </span>
             TTG
           </NavbarBrand>
+          <NavbarActions>
+            <NavbarAuthActions />
+          </NavbarActions>
         </NavbarInner>
       </Navbar>
 
