@@ -1,0 +1,235 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+/* ==========================================================================
+   TTG Design System — Design Tokens
+   Fuente de verdad visual del producto. Cambios aquí se propagan a toda
+   la aplicación. No definir colores, radios ni sombras "sueltos" en
+   componentes: siempre referenciar un token.
+   ========================================================================== */
+
+@theme {
+  /* ---- Tipografía ------------------------------------------------------ */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* Escala modular de tamaños (tamaño / line-height va en utilities tipo
+     text-base, ya provisto por Tailwind; aquí solo afinamos el paso). */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 3.25rem;
+
+  /* ---- Escala de radios -------------------------------------------------- */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+
+  /* ---- Sombras (sutiles, nunca duras) ----------------------------------- */
+  --shadow-xs: 0 1px 2px 0 rgb(16 16 20 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(16 16 20 / 0.06), 0 1px 2px -1px rgb(16 16 20 / 0.04);
+  --shadow-md: 0 4px 12px -2px rgb(16 16 20 / 0.08), 0 2px 4px -2px rgb(16 16 20 / 0.04);
+  --shadow-lg: 0 12px 24px -6px rgb(16 16 20 / 0.10), 0 4px 8px -4px rgb(16 16 20 / 0.05);
+  --shadow-xl: 0 24px 48px -12px rgb(16 16 20 / 0.16), 0 8px 16px -8px rgb(16 16 20 / 0.06);
+
+  /* ---- Paleta base: marca (índigo eléctrico) ---------------------------- */
+  --color-brand-50: #f2f2ff;
+  --color-brand-100: #e6e5fe;
+  --color-brand-200: #cfcdfd;
+  --color-brand-300: #aaa6fa;
+  --color-brand-400: #8078f5;
+  --color-brand-500: #5d54ee;
+  --color-brand-600: #4b3de0;
+  --color-brand-700: #3f31c4;
+  --color-brand-800: #34299e;
+  --color-brand-900: #2d2680;
+  --color-brand-950: #1b1750;
+
+  /* ---- Paleta base: neutrales (gris frío, no puro) ---------------------- */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #fafafb;
+  --color-neutral-100: #f4f4f6;
+  --color-neutral-200: #e8e8ec;
+  --color-neutral-300: #d3d3da;
+  --color-neutral-400: #a6a6b1;
+  --color-neutral-500: #7c7c88;
+  --color-neutral-600: #5c5c68;
+  --color-neutral-700: #45454f;
+  --color-neutral-800: #2b2b33;
+  --color-neutral-900: #19191e;
+  --color-neutral-950: #0d0d10;
+
+  /* ---- Semánticos --------------------------------------------------- */
+  --color-success-50: #ecfdf3;
+  --color-success-500: #16a34a;
+  --color-success-600: #15803d;
+  --color-success-700: #166534;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-500: #d97706;
+  --color-warning-600: #b45309;
+  --color-warning-700: #92400e;
+
+  --color-danger-50: #fef2f2;
+  --color-danger-500: #dc2626;
+  --color-danger-600: #b91c1c;
+  --color-danger-700: #991b1b;
+
+  --color-info-50: #eff6ff;
+  --color-info-500: #2563eb;
+  --color-info-600: #1d4ed8;
+  --color-info-700: #1e40af;
+
+  /* ---- Movimiento --------------------------------------------------- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
+
+  /* ---- Semánticos de superficie (mapean a vars claras/oscuras abajo) --- */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
+}
+
+/* ---- Tokens de superficie: modo claro (por defecto) -------------------- */
+:root {
+  --background: var(--color-neutral-0);
+  --foreground: var(--color-neutral-900);
+
+  --surface: var(--color-neutral-0);
+  --surface-hover: var(--color-neutral-50);
+  --surface-elevated: var(--color-neutral-0);
+
+  --border: var(--color-neutral-200);
+  --border-strong: var(--color-neutral-300);
+
+  --muted: var(--color-neutral-100);
+  --muted-foreground: var(--color-neutral-500);
+
+  --primary: var(--color-brand-500);
+  --primary-hover: var(--color-brand-600);
+  --primary-foreground: var(--color-neutral-0);
+
+  --secondary: var(--color-neutral-100);
+  --secondary-foreground: var(--color-neutral-900);
+
+  --accent: var(--color-brand-50);
+  --accent-foreground: var(--color-brand-700);
+
+  --destructive: var(--color-danger-500);
+  --destructive-foreground: var(--color-neutral-0);
+
+  --ring: var(--color-brand-400);
+}
+
+/* ---- Tokens de superficie: modo oscuro ---------------------------------- */
+.dark {
+  --background: var(--color-neutral-950);
+  --foreground: var(--color-neutral-50);
+
+  --surface: var(--color-neutral-900);
+  --surface-hover: var(--color-neutral-800);
+  --surface-elevated: var(--color-neutral-800);
+
+  --border: var(--color-neutral-800);
+  --border-strong: var(--color-neutral-700);
+
+  --muted: var(--color-neutral-800);
+  --muted-foreground: var(--color-neutral-400);
+
+  --primary: var(--color-brand-400);
+  --primary-hover: var(--color-brand-300);
+  --primary-foreground: var(--color-neutral-950);
+
+  --secondary: var(--color-neutral-800);
+  --secondary-foreground: var(--color-neutral-50);
+
+  --accent: var(--color-brand-950);
+  --accent-foreground: var(--color-brand-200);
+
+  --destructive: var(--color-danger-500);
+  --destructive-foreground: var(--color-neutral-0);
+
+  --ring: var(--color-brand-400);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Foco visible y consistente en toda la app (accesibilidad). */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  ::selection {
+    background-color: var(--color-brand-200);
+    color: var(--color-brand-900);
+  }
+}
+
+@layer utilities {
+  /* Respeta la preferencia del sistema para reducir movimiento. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
