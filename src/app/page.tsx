@@ -1,20 +1,46 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Ticket, MapPin } from "lucide-react";
+import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
+import { DemoDataBanner } from "@/components/discover/demo-data-banner";
+import { EventDiscovery } from "@/components/discover/event-discovery";
+import { getFeaturedEvents, getUpcomingEvents } from "@/data/events";
 
 export default function Home() {
+  const featuredEvents = getFeaturedEvents();
+  const events = getUpcomingEvents();
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center">
-      <p className="text-sm font-medium text-primary">TTG</p>
-      <h1 className="max-w-md text-2xl font-semibold text-foreground">
-        Base visual en construcción
-      </h1>
-      <p className="max-w-sm text-sm text-muted-foreground">
-        Las pantallas del producto aún no se han construido. Revisa el sistema de diseño
-        mientras tanto.
-      </p>
-      <Button asChild>
-        <Link href="/style-guide">Ver sistema de diseño</Link>
-      </Button>
-    </main>
+    <div className="min-h-screen bg-background">
+      <Navbar>
+        <NavbarInner>
+          <NavbarBrand>
+            <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Ticket className="size-4" />
+            </span>
+            TTG
+          </NavbarBrand>
+        </NavbarInner>
+      </Navbar>
+
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <div className="mb-6">
+          <DemoDataBanner />
+        </div>
+
+        <header className="mb-8">
+          <div className="mb-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+            <MapPin className="size-4" />
+            <span>Mostrando eventos cerca de Bogotá</span>
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            Descubre qué está pasando
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
+            Explora eventos de música, cultura, deporte y comunidad cerca de ti.
+          </p>
+        </header>
+
+        <EventDiscovery featuredEvents={featuredEvents} events={events} />
+      </main>
+    </div>
   );
 }
