@@ -1,29 +1,118 @@
-import { Construction } from "lucide-react";
-import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
-import { getCurrentUser } from "@/lib/auth";
+import Link from "next/link";
+import { Plus, CalendarDays } from "lucide-react";
+import { Navbar, NavbarInner, NavbarBrand, NavbarActions } from "@/components/ui/navbar";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/ui/state-message";
+import { OrganizerEventCard } from "@/components/organizer/organizer-event-card";
+import { getOrganizerEvents } from "@/lib/organizer";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrganizerPlaceholderPage() {
-  const currentUser = await getCurrentUser();
+export default async function OrganizerDashboardPage() {
+  const events = await getOrganizerEvents();
+  const now = Date.now();
+  const isPast = (e: (typeof events)[number]) => new Date(e.ends_at ?? e.starts_at).getTime() < now;
+
+  const borradores = events.filter((e) => e.status === "borrador");
+  const proximos = events.filter((e) => e.status !== "borrador" && !isPast(e));
+  const finalizados = events.filter((e) => e.status !== "borrador" && isPast(e));
+
+  const stats = [
+    { label: "Borradores", value: borradores.length },
+    { label: "Próximos", value: proximos.length },
+    { label: "Finalizados", value: finalizados.length },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Organizador</NavbarBrand>
+          <NavbarBrand>Panel de organizador</NavbarBrand>
+          <NavbarActions>
+            <Button asChild size="sm" variant="ghost">
+              <Link href="/organizador/perfil">Perfil</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/organizador/eventos/nuevo">
+                <Plus className="size-4" /> Crear evento
+              </Link>
+            </Button>
+          </NavbarActions>
         </NavbarInner>
       </Navbar>
-      <main className="mx-auto flex max-w-2xl flex-col items-center gap-3 px-4 py-24 text-center sm:px-6">
-        <div className="flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
-          <Construction className="size-6" />
+
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+        <header className="mb-8">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Mis eventos</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Crea, publica y administra los eventos de tu organización.
+          </p>
+        </header>
+
+        <div className="mb-8 grid grid-cols-3 gap-3 sm:gap-4">
+          {stats.map((stat) => (
+            <div key={stat.label} className="rounded-lg border border-border bg-surface p-4">
+              <p className="text-2xl font-semibold text-foreground">{stat.value}</p>
+              <p className="text-xs text-muted-foreground">{stat.label}</p>
+            </div>
+          ))}
         </div>
-        <h1 className="text-xl font-semibold text-foreground">Panel de organizador en construcción</h1>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          Tu cuenta ({currentUser?.email}) ya tiene acceso a esta sección protegida. El panel de
-          gestión de eventos se construye en una etapa posterior.
-        </p>
+
+        <Tabs defaultValue="proximos">
+          <TabsList>
+            <TabsTrigger value="proximos">Próximos ({proximos.length})</TabsTrigger>
+            <TabsTrigger value="borradores">Borradores ({borradores.length})</TabsTrigger>
+            <TabsTrigger value="finalizados">Finalizados ({finalizados.length})</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="proximos">
+            <EventList
+              events={proximos}
+              emptyTitle="Sin eventos próximos"
+              emptyDescription="Publica un evento para que aparezca aquí."
+            />
+          </TabsContent>
+          <TabsContent value="borradores">
+            <EventList
+              events={borradores}
+              emptyTitle="Sin borradores"
+              emptyDescription="Los eventos que aún no publicas aparecen aquí."
+            />
+          </TabsContent>
+          <TabsContent value="finalizados">
+            <EventList
+              events={finalizados}
+              emptyTitle="Sin eventos finalizados"
+              emptyDescription="Cuando un evento termine, aparecerá en esta lista."
+            />
+          </TabsContent>
+        </Tabs>
       </main>
+    </div>
+  );
+}
+
+function EventList({
+  events,
+  emptyTitle,
+  emptyDescription,
+}: {
+  events: Awaited<ReturnType<typeof getOrganizerEvents>>;
+  emptyTitle: string;
+  emptyDescription: string;
+}) {
+  if (events.length === 0) {
+    return (
+      <EmptyState icon={<CalendarDays className="size-5" />} title={emptyTitle} description={emptyDescription} />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {events.map((event) => (
+        <OrganizerEventCard key={event.id} event={event} />
+      ))}
     </div>
   );
 }
