@@ -83,11 +83,24 @@ export async function updateSession(request: NextRequest) {
       return redirect;
     }
 
-    // Cuentas de administrador: si ya inscribieron un factor MFA, esta
-    // sesión debe haber completado el desafío (aal2) para entrar a /admin.
-    // Preparado para exigir MFA en cuentas admin sin bloquear a las que
-    // aún no lo activaron.
+    // El panel de administración exige MFA, sin excepción: una cuenta
+    // admin sin factor inscrito no entra (se manda a activarlo en
+    // /cuenta), y una que sí lo tiene debe haber completado el desafío
+    // (aal2) en esta sesión, no solo tenerlo inscrito alguna vez.
     if (roleGate.prefix === "/admin") {
+      const { data: factorsData } = await supabase.auth.mfa.listFactors();
+      const hasVerifiedFactor = (factorsData?.totp ?? []).some((f) => f.status === "verified");
+
+      if (!hasVerifiedFactor) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/cuenta";
+        url.search = "";
+        url.searchParams.set("mfaRequerido", "1");
+        const redirect = NextResponse.redirect(url);
+        redirect.headers.set("Cache-Control", "private, no-store");
+        return redirect;
+      }
+
       const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== aal.nextLevel) {
         const url = request.nextUrl.clone();

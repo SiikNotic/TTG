@@ -6,6 +6,44 @@ export type Database = {
   };
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string;
+          admin_id: string;
+          created_at: string;
+          details: Json;
+          id: string;
+          target_id: string | null;
+          target_type: string;
+        };
+        Insert: {
+          action: string;
+          admin_id: string;
+          created_at?: string;
+          details?: Json;
+          id?: string;
+          target_id?: string | null;
+          target_type: string;
+        };
+        Update: {
+          action?: string;
+          admin_id?: string;
+          created_at?: string;
+          details?: Json;
+          id?: string;
+          target_id?: string | null;
+          target_type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_admin_id_fkey";
+            columns: ["admin_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       events: {
         Row: {
           address: string;
@@ -319,6 +357,55 @@ export type Database = {
         };
         Relationships: [];
       };
+      scan_attempts: {
+        Row: {
+          created_at: string;
+          event_id: string;
+          id: string;
+          result: string;
+          scanned_by: string;
+          ticket_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          event_id: string;
+          id?: string;
+          result: string;
+          scanned_by: string;
+          ticket_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          event_id?: string;
+          id?: string;
+          result?: string;
+          scanned_by?: string;
+          ticket_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "scan_attempts_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "scan_attempts_scanned_by_fkey";
+            columns: ["scanned_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "scan_attempts_ticket_id_fkey";
+            columns: ["ticket_id"];
+            isOneToOne: false;
+            referencedRelation: "tickets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       stripe_webhook_events: {
         Row: {
           created_at: string;
@@ -463,6 +550,92 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_force_ticket_status: {
+        Args: {
+          p_new_status: Database["public"]["Enums"]["ticket_status"];
+          p_reason: string;
+          p_ticket_id: string;
+        };
+        Returns: {
+          created_at: string;
+          encrypted_token: string | null;
+          event_id: string;
+          id: string;
+          order_id: string;
+          owner_id: string;
+          secure_token_hash: string;
+          serial: string;
+          status: Database["public"]["Enums"]["ticket_status"];
+          ticket_type_id: string;
+          updated_at: string;
+          used_at: string | null;
+        };
+      };
+      admin_pause_organizer_events: {
+        Args: { p_organizer_id: string };
+        Returns: {
+          address: string;
+          capacity: number;
+          category: Database["public"]["Enums"]["event_category"];
+          city: string;
+          cover_image_url: string | null;
+          created_at: string;
+          description: string;
+          ends_at: string | null;
+          id: string;
+          min_age: number | null;
+          organizer_id: string;
+          rules: Json;
+          slug: string;
+          starts_at: string;
+          status: Database["public"]["Enums"]["event_status"];
+          timezone: string;
+          title: string;
+          updated_at: string;
+          venue_name: string;
+        }[];
+      };
+      admin_set_event_status: {
+        Args: {
+          p_event_id: string;
+          p_new_status: Database["public"]["Enums"]["event_status"];
+        };
+        Returns: {
+          address: string;
+          capacity: number;
+          category: Database["public"]["Enums"]["event_category"];
+          city: string;
+          cover_image_url: string | null;
+          created_at: string;
+          description: string;
+          ends_at: string | null;
+          id: string;
+          min_age: number | null;
+          organizer_id: string;
+          rules: Json;
+          slug: string;
+          starts_at: string;
+          status: Database["public"]["Enums"]["event_status"];
+          timezone: string;
+          title: string;
+          updated_at: string;
+          venue_name: string;
+        };
+      };
+      admin_set_user_role: {
+        Args: {
+          p_new_role: Database["public"]["Enums"]["user_role"];
+          p_user_id: string;
+        };
+        Returns: {
+          avatar_url: string | null;
+          created_at: string;
+          full_name: string | null;
+          id: string;
+          role: Database["public"]["Enums"]["user_role"];
+          updated_at: string;
+        };
+      };
       apply_order_dispute: {
         Args: { p_amount: number; p_order_id: string; p_stripe_dispute_id: string };
         Returns: {

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { MailWarning, MailCheck } from "lucide-react";
+import { MailWarning, MailCheck, ShieldAlert } from "lucide-react";
 import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,10 @@ import { MfaSection } from "./mfa-section";
 
 export const dynamic = "force-dynamic";
 
+interface AccountPageProps {
+  searchParams: Promise<{ mfaRequerido?: string }>;
+}
+
 function getInitials(name: string | null, email: string) {
   const source = name?.trim() || email;
   return source
@@ -22,7 +26,8 @@ function getInitials(name: string | null, email: string) {
     .join("");
 }
 
-export default async function AccountPage() {
+export default async function AccountPage({ searchParams }: AccountPageProps) {
+  const { mfaRequerido } = await searchParams;
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/iniciar-sesion?next=/cuenta");
 
@@ -48,6 +53,13 @@ export default async function AccountPage() {
       </Navbar>
 
       <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+        {mfaRequerido === "1" && (
+          <div className="mb-6 flex items-center gap-2 rounded-md bg-warning-500/10 p-3 text-sm text-warning-600">
+            <ShieldAlert className="size-4 shrink-0" />
+            Activa la verificación en dos pasos para poder entrar al panel de administración.
+          </div>
+        )}
+
         <header className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Mi cuenta</h1>
