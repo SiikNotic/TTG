@@ -16,10 +16,9 @@ const timeFormatter = new Intl.DateTimeFormat("es-CO", {
   minute: "2-digit",
 });
 
-const currencyFormatter = new Intl.NumberFormat("es-CO", {
+const currencyFormatter = new Intl.NumberFormat("es-US", {
   style: "currency",
-  currency: "COP",
-  maximumFractionDigits: 0,
+  currency: "USD",
 });
 
 export function formatDateShort(iso: string) {

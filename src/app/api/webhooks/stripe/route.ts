@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { computePlatformFee } from "@/lib/payments/fees";
 
 export const runtime = "nodejs";
 
@@ -75,13 +76,24 @@ async function handleEvent(event: Stripe.Event, supabase: ReturnType<typeof crea
       const paymentIntentId =
         typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
 
+      // Solo el riel 'stripe' transfiere de verdad a una cuenta Connect (ahí
+      // sí existe un application_fee_amount real que Stripe cobró). Para
+      // paypal/ath_movil el cobro es un charge plano a la plataforma —
+      // Stripe no le resta ninguna comisión de aplicación — así que la
+      // comisión de la plataforma se calcula acá mismo para que el ledger
+      // (payment_transactions.organizer_amount) refleje correctamente
+      // cuánto le corresponde al organizador, aunque el dinero no se haya
+      // movido automáticamente.
+      const payoutRail = session.metadata?.payout_rail === "stripe" ? "stripe" : "platform_held";
+
       let chargeId: string | undefined;
       let applicationFeeAmount = 0;
       if (paymentIntentId) {
         const pi = await stripe.paymentIntents.retrieve(paymentIntentId, { expand: ["latest_charge"] });
         const latestCharge = pi.latest_charge;
         chargeId = typeof latestCharge === "string" ? latestCharge : latestCharge?.id;
-        applicationFeeAmount = pi.application_fee_amount ?? 0;
+        applicationFeeAmount =
+          payoutRail === "stripe" ? (pi.application_fee_amount ?? 0) : computePlatformFee(session.amount_total ?? 0);
       }
 
       const { data: tickets, error } = await supabase.rpc("confirm_order_paid", {

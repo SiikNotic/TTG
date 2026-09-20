@@ -575,6 +575,110 @@ export async function getReports(): Promise<Reports> {
   return { topEventsByRevenue, revenueByCategory };
 }
 
+export interface OrganizerPayoutBalance {
+  organizerId: string;
+  displayName: string | null;
+  method: "paypal" | "ath_movil" | null;
+  paypalEmail: string | null;
+  athMovilPhone: string | null;
+  pendingBalance: number;
+}
+
+/**
+ * Solo organizadores con método de cobro 'paypal' o 'ath_movil': los de
+ * 'stripe' (o sin configurar) ya se pagan solos vía Stripe Connect y no
+ * pasan por esta pantalla. El balance se recalcula siempre desde el
+ * ledger real (payment_transactions - organizer_payouts), igual que en
+ * getMyPayoutBalance para el propio organizador.
+ */
+export async function getOrganizerPayoutBalances(): Promise<OrganizerPayoutBalance[]> {
+  const supabase = await createClient();
+
+  const [{ data: settings }, { data: organizerProfiles }, { data: txns }, { data: payouts }] = await Promise.all([
+    supabase
+      .from("organizer_payout_settings")
+      .select("organizer_id, method, paypal_email, ath_movil_phone")
+      .in("method", ["paypal", "ath_movil"]),
+    supabase.from("organizer_profiles").select("id, display_name"),
+    supabase
+      .from("payment_transactions")
+      .select("organizer_amount, orders!inner(payout_rail, events!inner(organizer_id))")
+      .neq("orders.payout_rail", "stripe"),
+    supabase.from("organizer_payouts").select("organizer_id, amount, status"),
+  ]);
+
+  const nameByOrganizer = new Map((organizerProfiles ?? []).map((o) => [o.id, o.display_name]));
+
+  const earnedByOrganizer = new Map<string, number>();
+  for (const t of (txns ?? []) as unknown as {
+    organizer_amount: number;
+    orders: { events: { organizer_id: string } | null } | null;
+  }[]) {
+    const organizerId = t.orders?.events?.organizer_id;
+    if (!organizerId) continue;
+    earnedByOrganizer.set(organizerId, (earnedByOrganizer.get(organizerId) ?? 0) + t.organizer_amount);
+  }
+
+  const paidByOrganizer = new Map<string, number>();
+  for (const p of payouts ?? []) {
+    if (p.status === "failed") continue;
+    paidByOrganizer.set(p.organizer_id, (paidByOrganizer.get(p.organizer_id) ?? 0) + p.amount);
+  }
+
+  return (settings ?? []).map((s) => ({
+    organizerId: s.organizer_id,
+    displayName: nameByOrganizer.get(s.organizer_id) ?? null,
+    method: s.method as "paypal" | "ath_movil",
+    paypalEmail: s.paypal_email,
+    athMovilPhone: s.ath_movil_phone,
+    pendingBalance: Math.max((earnedByOrganizer.get(s.organizer_id) ?? 0) - (paidByOrganizer.get(s.organizer_id) ?? 0), 0),
+  }));
+}
+
+export interface AdminPayoutRow {
+  id: string;
+  organizerId: string;
+  organizerName: string | null;
+  method: "paypal" | "ath_movil";
+  amount: number;
+  currency: string;
+  status: string;
+  reference: string | null;
+  paypalBatchId: string | null;
+  createdAt: string;
+  completedAt: string | null;
+}
+
+/** Últimos payouts de paypal/ath_movil (todos los organizadores), para reconciliar y verificar estado. */
+export async function getRecentOrganizerPayouts(): Promise<AdminPayoutRow[]> {
+  const supabase = await createClient();
+
+  const [{ data: payouts }, { data: organizerProfiles }] = await Promise.all([
+    supabase
+      .from("organizer_payouts")
+      .select("id, organizer_id, method, amount, currency, status, reference, paypal_batch_id, created_at, completed_at")
+      .order("created_at", { ascending: false })
+      .limit(30),
+    supabase.from("organizer_profiles").select("id, display_name"),
+  ]);
+
+  const nameByOrganizer = new Map((organizerProfiles ?? []).map((o) => [o.id, o.display_name]));
+
+  return (payouts ?? []).map((p) => ({
+    id: p.id,
+    organizerId: p.organizer_id,
+    organizerName: nameByOrganizer.get(p.organizer_id) ?? null,
+    method: p.method as "paypal" | "ath_movil",
+    amount: p.amount,
+    currency: p.currency,
+    status: p.status,
+    reference: p.reference,
+    paypalBatchId: p.paypal_batch_id,
+    createdAt: p.created_at,
+    completedAt: p.completed_at,
+  }));
+}
+
 export interface SupportSearchResult {
   tickets: TicketLookupResult[];
   users: AdminUserRow[];

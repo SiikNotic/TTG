@@ -57,6 +57,12 @@ export async function refundTicket(_prev: ActionState, formData: FormData): Prom
 
   const amount = toStripeAmount(info.unit_price);
   const platformFeeRefunded = info.quantity > 0 ? Math.floor((info.platform_fee_amount ?? 0) / info.quantity) : 0;
+  // reverse_transfer/refund_application_fee solo son válidos para órdenes
+  // cobradas por el riel 'stripe' (única que transfirió a una cuenta
+  // Connect y descontó un application_fee real). Para paypal/ath_movil el
+  // charge fue plano a la plataforma: no hay transferencia ni fee de
+  // aplicación que revertir, así que es un refund normal.
+  const isStripeRail = info.payout_rail === "stripe";
 
   let refund: { id: string; status: string | null };
   try {
@@ -64,8 +70,7 @@ export async function refundTicket(_prev: ActionState, formData: FormData): Prom
       {
         payment_intent: info.stripe_payment_intent_id ?? undefined,
         amount,
-        reverse_transfer: true,
-        refund_application_fee: true,
+        ...(isStripeRail ? { reverse_transfer: true, refund_application_fee: true } : {}),
         metadata: { ticket_id: ticketId },
       },
       { idempotencyKey: `refund_ticket_${ticketId}` }

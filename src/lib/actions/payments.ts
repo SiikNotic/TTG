@@ -97,15 +97,29 @@ export async function createCheckoutSession(_prev: ActionState, formData: FormDa
   // propio organizador, no para compradores. Acá solo se usa para decidir
   // si se puede cobrar, nunca se devuelve al cliente.
   const admin = createServiceRoleClient();
-  const { data: stripeAccount } = await admin
-    .from("organizer_stripe_accounts")
-    .select("stripe_account_id, charges_enabled")
+  const { data: payoutSettings } = await admin
+    .from("organizer_payout_settings")
+    .select("method")
     .eq("organizer_id", event.organizer_id)
     .maybeSingle();
+  // Sin fila configurada, el organizador está en 'stripe' (default histórico).
+  const payoutRail = payoutSettings?.method ?? "stripe";
 
-  if (!stripeAccount?.charges_enabled) {
-    return { error: "Este organizador todavía no puede recibir pagos. Intenta más tarde." };
+  let stripeAccountId: string | null = null;
+  if (payoutRail === "stripe") {
+    const { data: stripeAccount } = await admin
+      .from("organizer_stripe_accounts")
+      .select("stripe_account_id, charges_enabled")
+      .eq("organizer_id", event.organizer_id)
+      .maybeSingle();
+    if (!stripeAccount?.charges_enabled) {
+      return { error: "Este organizador todavía no puede recibir pagos. Intenta más tarde." };
+    }
+    stripeAccountId = stripeAccount.stripe_account_id;
   }
+  // paypal / ath_movil: no requieren cuenta Stripe Connect — el cobro
+  // completo queda en el balance de la propia plataforma (ver más abajo)
+  // y se le paga al organizador por fuera de Stripe.
 
   const unitAmount = toStripeAmount(order.unit_price);
   const amountTotal = unitAmount * order.quantity;
@@ -120,18 +134,24 @@ export async function createCheckoutSession(_prev: ActionState, formData: FormDa
           {
             quantity: order.quantity,
             price_data: {
-              currency: "cop",
+              currency: "usd",
               unit_amount: unitAmount,
               product_data: { name: `${event.title} · ${ticketType.name}` },
             },
           },
         ],
         payment_intent_data: {
-          application_fee_amount: applicationFeeAmount,
-          transfer_data: { destination: stripeAccount.stripe_account_id },
+          // Solo se transfiere directo a la cuenta Connect del organizador
+          // cuando su método de cobro es 'stripe'. Para paypal/ath_movil el
+          // dinero se queda 100% en el balance de la plataforma: el webhook
+          // igual registra la comisión (platform_fee) en payment_transactions
+          // para el ledger, aunque Stripe no mueva nada automáticamente.
+          ...(stripeAccountId
+            ? { application_fee_amount: applicationFeeAmount, transfer_data: { destination: stripeAccountId } }
+            : {}),
           metadata: { order_id: order.id },
         },
-        metadata: { order_id: order.id },
+        metadata: { order_id: order.id, payout_rail: payoutRail },
         success_url: `${siteUrl()}/ordenes/${order.id}?pago=exito`,
         cancel_url: `${siteUrl()}/ordenes/${order.id}?pago=cancelado`,
       },
@@ -145,7 +165,10 @@ export async function createCheckoutSession(_prev: ActionState, formData: FormDa
 
   if (!session.url) return { error: "Stripe no devolvió una URL de pago." };
 
-  await admin.from("orders").update({ stripe_checkout_session_id: session.id }).eq("id", order.id);
+  await admin
+    .from("orders")
+    .update({ stripe_checkout_session_id: session.id, payout_rail: payoutRail })
+    .eq("id", order.id);
 
   redirect(session.url);
 }

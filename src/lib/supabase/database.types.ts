@@ -1,6 +1,8 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
@@ -127,6 +129,7 @@ export type Database = {
           expires_at: string | null;
           id: string;
           paid_at: string | null;
+          payout_rail: Database["public"]["Enums"]["payout_method"];
           platform_fee_amount: number | null;
           quantity: number;
           status: Database["public"]["Enums"]["order_status"];
@@ -144,6 +147,7 @@ export type Database = {
           expires_at?: string | null;
           id?: string;
           paid_at?: string | null;
+          payout_rail?: Database["public"]["Enums"]["payout_method"];
           platform_fee_amount?: number | null;
           quantity: number;
           status?: Database["public"]["Enums"]["order_status"];
@@ -161,6 +165,7 @@ export type Database = {
           expires_at?: string | null;
           id?: string;
           paid_at?: string | null;
+          payout_rail?: Database["public"]["Enums"]["payout_method"];
           platform_fee_amount?: number | null;
           quantity?: number;
           status?: Database["public"]["Enums"]["order_status"];
@@ -190,6 +195,95 @@ export type Database = {
             columns: ["ticket_type_id"];
             isOneToOne: false;
             referencedRelation: "ticket_types";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      organizer_payout_settings: {
+        Row: {
+          ath_movil_phone: string | null;
+          method: Database["public"]["Enums"]["payout_method"];
+          organizer_id: string;
+          paypal_email: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          ath_movil_phone?: string | null;
+          method?: Database["public"]["Enums"]["payout_method"];
+          organizer_id: string;
+          paypal_email?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          ath_movil_phone?: string | null;
+          method?: Database["public"]["Enums"]["payout_method"];
+          organizer_id?: string;
+          paypal_email?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organizer_payout_settings_organizer_id_fkey";
+            columns: ["organizer_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      organizer_payouts: {
+        Row: {
+          amount: number;
+          completed_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          currency: string;
+          id: string;
+          method: Database["public"]["Enums"]["payout_method"];
+          organizer_id: string;
+          paypal_batch_id: string | null;
+          reference: string | null;
+          status: string;
+        };
+        Insert: {
+          amount: number;
+          completed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          currency?: string;
+          id?: string;
+          method: Database["public"]["Enums"]["payout_method"];
+          organizer_id: string;
+          paypal_batch_id?: string | null;
+          reference?: string | null;
+          status?: string;
+        };
+        Update: {
+          amount?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          currency?: string;
+          id?: string;
+          method?: Database["public"]["Enums"]["payout_method"];
+          organizer_id?: string;
+          paypal_batch_id?: string | null;
+          reference?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organizer_payouts_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "organizer_payouts_organizer_id_fkey";
+            columns: ["organizer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -637,7 +731,11 @@ export type Database = {
         };
       };
       apply_order_dispute: {
-        Args: { p_amount: number; p_order_id: string; p_stripe_dispute_id: string };
+        Args: {
+          p_amount: number;
+          p_order_id: string;
+          p_stripe_dispute_id: string;
+        };
         Returns: {
           created_at: string;
           encrypted_token: string | null;
@@ -685,6 +783,7 @@ export type Database = {
           expires_at: string | null;
           id: string;
           paid_at: string | null;
+          payout_rail: Database["public"]["Enums"]["payout_method"];
           platform_fee_amount: number | null;
           quantity: number;
           status: Database["public"]["Enums"]["order_status"];
@@ -712,6 +811,7 @@ export type Database = {
         Args: { p_ticket_id: string };
         Returns: {
           order_id: string;
+          payout_rail: Database["public"]["Enums"]["payout_method"];
           platform_fee_amount: number;
           quantity: number;
           stripe_payment_intent_id: string;
@@ -719,10 +819,8 @@ export type Database = {
           unit_price: number;
         }[];
       };
-      get_ticket_qr_payload: {
-        Args: { p_ticket_id: string };
-        Returns: string;
-      };
+      get_ticket_qr_payload: { Args: { p_ticket_id: string }; Returns: string };
+      is_admin: { Args: never; Returns: boolean };
       mark_order_payment_failed: {
         Args: { p_order_id: string };
         Returns: {
@@ -733,6 +831,7 @@ export type Database = {
           expires_at: string | null;
           id: string;
           paid_at: string | null;
+          payout_rail: Database["public"]["Enums"]["payout_method"];
           platform_fee_amount: number | null;
           quantity: number;
           status: Database["public"]["Enums"]["order_status"];
@@ -753,6 +852,7 @@ export type Database = {
           expires_at: string | null;
           id: string;
           paid_at: string | null;
+          payout_rail: Database["public"]["Enums"]["payout_method"];
           platform_fee_amount: number | null;
           quantity: number;
           status: Database["public"]["Enums"]["order_status"];
@@ -807,6 +907,7 @@ export type Database = {
         | "otros";
       event_status: "borrador" | "publicado" | "pausado" | "cancelado";
       order_status: "pendiente" | "pagado" | "expirado" | "cancelado" | "fallido";
+      payout_method: "stripe" | "paypal" | "ath_movil";
       ticket_status: "active" | "used" | "cancelled" | "refunded" | "expired" | "disputed";
       user_role: "asistente" | "organizador" | "admin";
     };
@@ -815,3 +916,136 @@ export type Database = {
     };
   };
 };
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R;
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
+      }
+      ? R
+      : never
+    : never;
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I;
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
+      }
+      ? I
+      : never
+    : never;
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U;
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
+      }
+      ? U
+      : never
+    : never;
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never;
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never;
+
+export const Constants = {
+  public: {
+    Enums: {
+      event_category: [
+        "musica",
+        "escuelas",
+        "deportes",
+        "teatro",
+        "fiestas",
+        "familia",
+        "gastronomia",
+        "religioso",
+        "comunidad",
+        "otros",
+      ],
+      event_status: ["borrador", "publicado", "pausado", "cancelado"],
+      order_status: ["pendiente", "pagado", "expirado", "cancelado", "fallido"],
+      payout_method: ["stripe", "paypal", "ath_movil"],
+      ticket_status: ["active", "used", "cancelled", "refunded", "expired", "disputed"],
+      user_role: ["asistente", "organizador", "admin"],
+    },
+  },
+} as const;
