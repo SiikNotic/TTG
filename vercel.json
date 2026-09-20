@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/generate-venue-events",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}

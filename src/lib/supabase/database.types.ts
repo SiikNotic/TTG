@@ -60,6 +60,7 @@ export type Database = {
           min_age: number | null;
           organizer_id: string;
           rules: Json;
+          series_id: string | null;
           slug: string;
           starts_at: string;
           status: Database["public"]["Enums"]["event_status"];
@@ -81,6 +82,7 @@ export type Database = {
           min_age?: number | null;
           organizer_id: string;
           rules?: Json;
+          series_id?: string | null;
           slug: string;
           starts_at: string;
           status?: Database["public"]["Enums"]["event_status"];
@@ -102,6 +104,7 @@ export type Database = {
           min_age?: number | null;
           organizer_id?: string;
           rules?: Json;
+          series_id?: string | null;
           slug?: string;
           starts_at?: string;
           status?: Database["public"]["Enums"]["event_status"];
@@ -116,6 +119,13 @@ export type Database = {
             columns: ["organizer_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_series_id_fkey";
+            columns: ["series_id"];
+            isOneToOne: false;
+            referencedRelation: "venue_series";
             referencedColumns: ["id"];
           },
         ];
@@ -639,6 +649,83 @@ export type Database = {
           },
         ];
       };
+      venue_series: {
+        Row: {
+          address: string;
+          capacity: number;
+          category: Database["public"]["Enums"]["event_category"];
+          city: string;
+          close_time: string | null;
+          cover_image_url: string | null;
+          cover_price: number;
+          created_at: string;
+          description: string;
+          id: string;
+          min_age: number | null;
+          open_time: string;
+          open_weekdays: number[];
+          organizer_id: string;
+          rules: Json;
+          status: string;
+          timezone: string;
+          title: string;
+          updated_at: string;
+          venue_name: string;
+        };
+        Insert: {
+          address?: string;
+          capacity: number;
+          category: Database["public"]["Enums"]["event_category"];
+          city?: string;
+          close_time?: string | null;
+          cover_image_url?: string | null;
+          cover_price?: number;
+          created_at?: string;
+          description?: string;
+          id?: string;
+          min_age?: number | null;
+          open_time?: string;
+          open_weekdays: number[];
+          organizer_id: string;
+          rules?: Json;
+          status?: string;
+          timezone?: string;
+          title: string;
+          updated_at?: string;
+          venue_name?: string;
+        };
+        Update: {
+          address?: string;
+          capacity?: number;
+          category?: Database["public"]["Enums"]["event_category"];
+          city?: string;
+          close_time?: string | null;
+          cover_image_url?: string | null;
+          cover_price?: number;
+          created_at?: string;
+          description?: string;
+          id?: string;
+          min_age?: number | null;
+          open_time?: string;
+          open_weekdays?: number[];
+          organizer_id?: string;
+          rules?: Json;
+          status?: string;
+          timezone?: string;
+          title?: string;
+          updated_at?: string;
+          venue_name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "venue_series_organizer_id_fkey";
+            columns: ["organizer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -805,6 +892,31 @@ export type Database = {
         Returns: {
           serial: string;
           ticket_id: string;
+        }[];
+      };
+      generate_venue_series_events: {
+        Args: { p_days_ahead?: number; p_series_id: string };
+        Returns: {
+          address: string;
+          capacity: number;
+          category: Database["public"]["Enums"]["event_category"];
+          city: string;
+          cover_image_url: string | null;
+          created_at: string;
+          description: string;
+          ends_at: string | null;
+          id: string;
+          min_age: number | null;
+          organizer_id: string;
+          rules: Json;
+          series_id: string | null;
+          slug: string;
+          starts_at: string;
+          status: Database["public"]["Enums"]["event_status"];
+          timezone: string;
+          title: string;
+          updated_at: string;
+          venue_name: string;
         }[];
       };
       get_refundable_ticket: {

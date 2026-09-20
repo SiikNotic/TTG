@@ -1,16 +1,29 @@
 "use client";
 
 import { useActionState } from "react";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Ticket } from "lucide-react";
 import { createCheckoutSession } from "@/lib/actions/payments";
-import { cancelOrderAction } from "@/lib/actions/orders";
+import { cancelOrderAction, confirmFreeOrder } from "@/lib/actions/orders";
 import { INITIAL_ACTION_STATE } from "@/lib/actions/action-state";
 import { FormAlert } from "@/components/auth/form-alert";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { Button } from "@/components/ui/button";
 
-function ConfirmOrderForm({ orderId }: { orderId: string }) {
-  const [state, formAction] = useActionState(createCheckoutSession, INITIAL_ACTION_STATE);
+function ConfirmOrderForm({ orderId, isFree }: { orderId: string; isFree: boolean }) {
+  const [state, formAction] = useActionState(isFree ? confirmFreeOrder : createCheckoutSession, INITIAL_ACTION_STATE);
+
+  if (isFree) {
+    return (
+      <form action={formAction} className="flex flex-col gap-3">
+        <FormAlert state={state} />
+        <input type="hidden" name="orderId" value={orderId} />
+        <SubmitButton>
+          <Ticket className="size-4" /> Confirmar entrada gratis
+        </SubmitButton>
+      </form>
+    );
+  }
+
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <FormAlert state={state} />

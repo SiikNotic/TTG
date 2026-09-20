@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { ActionState } from "@/lib/actions/action-state";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -47,6 +48,56 @@ export async function reserveTickets(_prev: ActionState, formData: FormData): Pr
 
   revalidatePath(`/comprar/${ticketTypeId}`);
   redirect(`/ordenes/${data.id}`);
+}
+
+/**
+ * Confirma una orden gratis (unit_price = 0) sin pasar por Stripe: no
+ * tiene sentido pedirle tarjeta a nadie ni exigirle al organizador tener
+ * un método de cobro configurado para regalar entradas. Nunca se confía
+ * en el precio "gratis" desde el formulario: se relee la orden con el
+ * cliente del propio comprador (RLS ya garantiza que es la suya) y se
+ * verifica unit_price = 0 en el servidor antes de emitir nada.
+ */
+export async function confirmFreeOrder(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const orderId = String(formData.get("orderId") ?? "");
+  if (!orderId) return { error: "Orden inválida." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Debes iniciar sesión." };
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, buyer_id, unit_price, status, expires_at")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (!order || order.buyer_id !== user.id) return { error: "Orden no encontrada." };
+  if (Number(order.unit_price) !== 0) return { error: "Esta orden no es gratuita." };
+
+  const isExpired = !!order.expires_at && new Date(order.expires_at).getTime() <= Date.now();
+  if (order.status !== "pendiente" || isExpired) {
+    return { error: "Esta reserva ya no está pendiente de confirmación." };
+  }
+
+  // confirm_order_paid es la misma función que usa el webhook de Stripe;
+  // acá se llama con null en los campos de Stripe (no hubo cobro real) para
+  // que el ticket quede correctamente marcado como "no pagado por Stripe" —
+  // eso es lo que evita que un reembolso intente después una llamada real a
+  // la API de Stripe sobre una orden que nunca pasó por ahí.
+  const admin = createServiceRoleClient();
+  const { error } = await admin.rpc("confirm_order_paid", {
+    p_order_id: orderId,
+    p_stripe_payment_intent_id: null as unknown as string,
+    p_stripe_charge_id: null as unknown as string,
+    p_amount_total: 0,
+    p_application_fee_amount: 0,
+  });
+  if (error) return { error: "No se pudo confirmar la entrada." };
+
+  revalidatePath(`/ordenes/${orderId}`);
+  redirect(`/ordenes/${orderId}?pago=exito`);
 }
 
 export async function cancelOrderAction(_prev: ActionState, formData: FormData): Promise<ActionState> {

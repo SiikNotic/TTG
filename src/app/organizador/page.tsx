@@ -36,6 +36,9 @@ export default async function OrganizerDashboardPage() {
               <Link href="/organizador/finanzas">Finanzas</Link>
             </Button>
             <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
+              <Link href="/organizador/recurrentes">Negocios</Link>
+            </Button>
+            <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
               <Link href="/organizador/pagos">Pagos</Link>
             </Button>
             <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
@@ -49,6 +52,9 @@ export default async function OrganizerDashboardPage() {
             <NavbarMobileMenu>
               <Button asChild size="sm" variant="ghost" className="w-full justify-start">
                 <Link href="/organizador/finanzas">Finanzas</Link>
+              </Button>
+              <Button asChild size="sm" variant="ghost" className="w-full justify-start">
+                <Link href="/organizador/recurrentes">Negocios recurrentes</Link>
               </Button>
               <Button asChild size="sm" variant="ghost" className="w-full justify-start">
                 <Link href="/organizador/pagos">Pagos</Link>

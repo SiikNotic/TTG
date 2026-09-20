@@ -73,3 +73,48 @@ export async function getOrganizerProfile(userId: string): Promise<OrganizerProf
   const { data } = await supabase.from("organizer_profiles").select("*").eq("id", userId).maybeSingle();
   return data;
 }
+
+export type VenueSeriesRow = Database["public"]["Tables"]["venue_series"]["Row"];
+
+/** "Negocios recurrentes" del organizador (bares/discotecas con cover fijo por día). */
+export async function getMyVenueSeries(): Promise<VenueSeriesRow[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from("venue_series")
+    .select("*")
+    .eq("organizer_id", user.id)
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+/** Una serie puntual, verificando dueño (o admin) además de RLS. */
+export async function getVenueSeriesForOrganizer(
+  seriesId: string
+): Promise<{ series: VenueSeriesRow; upcomingEvents: EventRow[] } | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: series } = await supabase.from("venue_series").select("*").eq("id", seriesId).maybeSingle();
+  if (!series) return null;
+
+  if (series.organizer_id !== user.id) {
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    if (profile?.role !== "admin") return null;
+  }
+
+  const { data: upcomingEvents } = await supabase
+    .from("events")
+    .select("*")
+    .eq("series_id", seriesId)
+    .order("starts_at", { ascending: true });
+
+  return { series, upcomingEvents: upcomingEvents ?? [] };
+}

@@ -59,7 +59,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
                 <span className="text-sm font-medium">Reserva pendiente de confirmación</span>
               </div>
               {order.expires_at && <Countdown expiresAt={order.expires_at} />}
-              <ConfirmOrderForm orderId={order.id} />
+              <ConfirmOrderForm orderId={order.id} isFree={Number(order.unit_price) === 0} />
               <CancelOrderForm orderId={order.id} />
             </CardContent>
           </Card>

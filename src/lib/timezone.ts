@@ -20,6 +20,7 @@ export const TIMEZONES: TimezoneOption[] = [
   { value: "America/Caracas", label: "Caracas (GMT-4)" },
   { value: "America/Guayaquil", label: "Quito / Guayaquil (GMT-5)" },
   { value: "America/New_York", label: "Nueva York (GMT-5/-4)" },
+  { value: "America/Puerto_Rico", label: "Puerto Rico (GMT-4)" },
   { value: "America/Los_Angeles", label: "Los Ángeles (GMT-8/-7)" },
   { value: "Europe/Madrid", label: "Madrid (GMT+1/+2)" },
 ];
