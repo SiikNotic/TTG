@@ -31,6 +31,9 @@ export default async function OrganizerDashboardPage() {
           <NavbarBrand>Panel de organizador</NavbarBrand>
           <NavbarActions>
             <Button asChild size="sm" variant="ghost">
+              <Link href="/organizador/finanzas">Finanzas</Link>
+            </Button>
+            <Button asChild size="sm" variant="ghost">
               <Link href="/organizador/pagos">Pagos</Link>
             </Button>
             <Button asChild size="sm" variant="ghost">
