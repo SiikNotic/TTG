@@ -120,6 +120,10 @@ export async function setNewPasswordAfterRecovery(
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: translateAuthError(error.message) };
 
+  // Igual que en el cambio de contraseña desde la cuenta: una recuperación
+  // exitosa revoca cualquier otra sesión que hubiera quedado abierta.
+  await supabase.auth.signOut({ scope: "others" });
+
   revalidatePath("/", "layout");
   redirect("/cuenta");
 }
@@ -157,7 +161,13 @@ export async function changePassword(
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) return { error: translateAuthError(error.message) };
 
-  return { success: "Contraseña actualizada correctamente." };
+  // Si alguien más tenía una sesión abierta con la contraseña anterior
+  // (o la propia cuenta estaba comprometida), cambiar la contraseña debe
+  // cerrarle el paso: se revocan todas las demás sesiones, dejando activa
+  // solo la que acaba de hacer el cambio.
+  await supabase.auth.signOut({ scope: "others" });
+
+  return { success: "Contraseña actualizada correctamente. Cerramos tus otras sesiones activas." };
 }
 
 export async function resendVerificationEmail(

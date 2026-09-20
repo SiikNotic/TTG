@@ -15,6 +15,11 @@ type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
 const CATEGORY_VALUES = new Set(CATEGORIES.map((c) => c.value));
 const TIMEZONE_VALUES = new Set(TIMEZONES.map((t) => t.value));
+// Allowlist explícita, no "startsWith('image/')": eso también deja pasar
+// image/svg+xml, y un SVG puede llevar <script> embebido (XSS almacenado
+// si alguien abre la imagen directo). El bucket además tiene su propio
+// allowed_mime_types como segunda barrera del lado de Storage.
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 interface ParsedEventForm {
   title: string;
@@ -284,7 +289,7 @@ export async function uploadEventCover(_prev: ActionState, formData: FormData): 
 
   if (!eventId) return { error: "Evento inválido." };
   if (!(file instanceof File) || file.size === 0) return { error: "Selecciona una imagen." };
-  if (!file.type.startsWith("image/")) return { error: "El archivo debe ser una imagen." };
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) return { error: "El archivo debe ser una imagen (JPG, PNG, WEBP o GIF)." };
   if (file.size > 4 * 1024 * 1024) return { error: "La imagen no puede superar 4 MB." };
 
   const supabase = await createClient();

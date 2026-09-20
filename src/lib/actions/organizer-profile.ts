@@ -5,6 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/lib/actions/action-state";
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
+// Allowlist explícita, no "startsWith('image/')": eso también deja pasar
+// image/svg+xml, y un SVG puede llevar <script> embebido (XSS almacenado
+// si alguien abre la imagen directo). El bucket además tiene su propio
+// allowed_mime_types como segunda barrera del lado de Storage.
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export async function updateOrganizerProfile(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const displayName = String(formData.get("displayName") ?? "").trim();
@@ -41,7 +46,7 @@ export async function uploadOrganizerLogo(_prev: ActionState, formData: FormData
   const file = formData.get("logo");
 
   if (!(file instanceof File) || file.size === 0) return { error: "Selecciona una imagen." };
-  if (!file.type.startsWith("image/")) return { error: "El archivo debe ser una imagen." };
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) return { error: "El archivo debe ser una imagen (JPG, PNG, WEBP o GIF)." };
   if (file.size > MAX_LOGO_BYTES) return { error: "La imagen no puede superar 2 MB." };
 
   const supabase = await createClient();
