@@ -17,6 +17,7 @@ const STATUS_INFO: Record<string, { label: string; ok: boolean }> = {
   cancelled: { label: "Cancelada", ok: false },
   refunded: { label: "Reembolsada", ok: false },
   expired: { label: "Expirada", ok: false },
+  disputed: { label: "En disputa — no permitir ingreso", ok: false },
 };
 
 function ValidateForm() {

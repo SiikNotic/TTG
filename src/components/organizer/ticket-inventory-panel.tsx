@@ -14,6 +14,7 @@ const STATUS_LABEL: Record<string, { label: string; variant: "success" | "warnin
   cancelled: { label: "Cancelada", variant: "danger" },
   refunded: { label: "Reembolsada", variant: "danger" },
   expired: { label: "Expirada", variant: "warning" },
+  disputed: { label: "En disputa", variant: "warning" },
 };
 
 function InventoryStat({ label, value }: { label: string; value: number }) {
@@ -79,12 +80,13 @@ function TicketRowActions({ ticket }: { ticket: TicketRow }) {
 function TicketInventoryPanel({ inventory, tickets }: { inventory: TicketInventory; tickets: TicketRow[] }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
         <InventoryStat label="Capacidad" value={inventory.capacityTotal} />
         <InventoryStat label="Activas" value={inventory.active} />
         <InventoryStat label="Usadas" value={inventory.used} />
         <InventoryStat label="Canceladas" value={inventory.cancelled} />
         <InventoryStat label="Reembolsadas" value={inventory.refunded} />
+        <InventoryStat label="En disputa" value={inventory.disputed} />
         <InventoryStat label="Disponibles" value={inventory.available} />
       </div>
 

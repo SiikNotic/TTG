@@ -49,18 +49,6 @@ export async function reserveTickets(_prev: ActionState, formData: FormData): Pr
   redirect(`/ordenes/${data.id}`);
 }
 
-export async function confirmOrderAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const orderId = String(formData.get("orderId") ?? "");
-  if (!orderId) return { error: "Orden inválida." };
-
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("confirm_order", { p_order_id: orderId });
-  if (error) return { error: translateOrderError(error.message) };
-
-  revalidatePath(`/ordenes/${orderId}`);
-  redirect(`/ordenes/${orderId}`);
-}
-
 export async function cancelOrderAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const orderId = String(formData.get("orderId") ?? "");
   if (!orderId) return { error: "Orden inválida." };

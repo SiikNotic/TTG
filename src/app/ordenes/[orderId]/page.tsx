@@ -87,14 +87,16 @@ export default async function OrderPage({ params }: OrderPageProps) {
           </Card>
         )}
 
-        {(effectiveStatus === "expirado" || effectiveStatus === "cancelado") && (
+        {(effectiveStatus === "expirado" || effectiveStatus === "cancelado" || effectiveStatus === "fallido") && (
           <Card>
             <CardContent className="flex flex-col items-center gap-4 pt-6 text-center">
               <XCircle className="size-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
                 {effectiveStatus === "expirado"
                   ? "Esta reserva expiró sin confirmarse."
-                  : "Esta reserva fue cancelada."}
+                  : effectiveStatus === "fallido"
+                    ? "El pago no se pudo completar."
+                    : "Esta reserva fue cancelada."}
               </p>
               <Button asChild variant="secondary" size="sm">
                 <Link href={`/comprar/${order.ticket_type_id}`}>Intentar de nuevo</Link>

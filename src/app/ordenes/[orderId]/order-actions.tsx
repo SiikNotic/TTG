@@ -1,22 +1,26 @@
 "use client";
 
 import { useActionState } from "react";
-import { confirmOrderAction, cancelOrderAction } from "@/lib/actions/orders";
+import { CreditCard } from "lucide-react";
+import { createCheckoutSession } from "@/lib/actions/payments";
+import { cancelOrderAction } from "@/lib/actions/orders";
 import { INITIAL_ACTION_STATE } from "@/lib/actions/action-state";
 import { FormAlert } from "@/components/auth/form-alert";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { Button } from "@/components/ui/button";
 
 function ConfirmOrderForm({ orderId }: { orderId: string }) {
-  const [state, formAction] = useActionState(confirmOrderAction, INITIAL_ACTION_STATE);
+  const [state, formAction] = useActionState(createCheckoutSession, INITIAL_ACTION_STATE);
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <FormAlert state={state} />
       <input type="hidden" name="orderId" value={orderId} />
-      <SubmitButton>Confirmar pago (simulado)</SubmitButton>
+      <SubmitButton>
+        <CreditCard className="size-4" /> Pagar con Stripe
+      </SubmitButton>
       <p className="text-xs text-muted-foreground">
-        No se procesa ningún pago real todavía: esto emite las entradas directamente para poder probar el
-        sistema de tickets.
+        Se abre el checkout seguro de Stripe. Las entradas se emiten solo cuando Stripe confirma el pago; nunca
+        guardamos el número de tu tarjeta.
       </p>
     </form>
   );

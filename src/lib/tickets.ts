@@ -14,6 +14,7 @@ export interface TicketInventory {
   cancelled: number;
   refunded: number;
   expired: number;
+  disputed: number;
   held: number;
   available: number;
 }
@@ -31,7 +32,7 @@ export async function getTicketTypeInventory(ticketTypeId: string): Promise<Tick
 
   const { data: statusRows } = await supabase.from("tickets").select("status").eq("ticket_type_id", ticketTypeId);
 
-  const counts = { active: 0, used: 0, cancelled: 0, refunded: 0, expired: 0 };
+  const counts = { active: 0, used: 0, cancelled: 0, refunded: 0, expired: 0, disputed: 0 };
   for (const row of statusRows ?? []) {
     counts[row.status as keyof typeof counts] += 1;
   }

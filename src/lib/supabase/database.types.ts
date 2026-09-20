@@ -82,37 +82,52 @@ export type Database = {
       };
       orders: {
         Row: {
+          amount_total: number | null;
           buyer_id: string;
           created_at: string;
           event_id: string;
           expires_at: string | null;
           id: string;
+          paid_at: string | null;
+          platform_fee_amount: number | null;
           quantity: number;
           status: Database["public"]["Enums"]["order_status"];
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
           ticket_type_id: string;
           unit_price: number;
           updated_at: string;
         };
         Insert: {
+          amount_total?: number | null;
           buyer_id: string;
           created_at?: string;
           event_id: string;
           expires_at?: string | null;
           id?: string;
+          paid_at?: string | null;
+          platform_fee_amount?: number | null;
           quantity: number;
           status?: Database["public"]["Enums"]["order_status"];
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
           ticket_type_id: string;
           unit_price: number;
           updated_at?: string;
         };
         Update: {
+          amount_total?: number | null;
           buyer_id?: string;
           created_at?: string;
           event_id?: string;
           expires_at?: string | null;
           id?: string;
+          paid_at?: string | null;
+          platform_fee_amount?: number | null;
           quantity?: number;
           status?: Database["public"]["Enums"]["order_status"];
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
           ticket_type_id?: string;
           unit_price?: number;
           updated_at?: string;
@@ -179,6 +194,104 @@ export type Database = {
           },
         ];
       };
+      organizer_stripe_accounts: {
+        Row: {
+          charges_enabled: boolean;
+          created_at: string;
+          details_submitted: boolean;
+          organizer_id: string;
+          payouts_enabled: boolean;
+          stripe_account_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          charges_enabled?: boolean;
+          created_at?: string;
+          details_submitted?: boolean;
+          organizer_id: string;
+          payouts_enabled?: boolean;
+          stripe_account_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          charges_enabled?: boolean;
+          created_at?: string;
+          details_submitted?: boolean;
+          organizer_id?: string;
+          payouts_enabled?: boolean;
+          stripe_account_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organizer_stripe_accounts_organizer_id_fkey";
+            columns: ["organizer_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      payment_transactions: {
+        Row: {
+          created_at: string;
+          currency: string;
+          gross_amount: number;
+          id: string;
+          order_id: string;
+          organizer_amount: number;
+          platform_fee_amount: number;
+          stripe_charge_id: string | null;
+          stripe_payment_intent_id: string | null;
+          stripe_refund_id: string | null;
+          ticket_id: string | null;
+          type: string;
+        };
+        Insert: {
+          created_at?: string;
+          currency?: string;
+          gross_amount: number;
+          id?: string;
+          order_id: string;
+          organizer_amount: number;
+          platform_fee_amount: number;
+          stripe_charge_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          stripe_refund_id?: string | null;
+          ticket_id?: string | null;
+          type: string;
+        };
+        Update: {
+          created_at?: string;
+          currency?: string;
+          gross_amount?: number;
+          id?: string;
+          order_id?: string;
+          organizer_amount?: number;
+          platform_fee_amount?: number;
+          stripe_charge_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          stripe_refund_id?: string | null;
+          ticket_id?: string | null;
+          type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payment_transactions_ticket_id_fkey";
+            columns: ["ticket_id"];
+            isOneToOne: false;
+            referencedRelation: "tickets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -203,6 +316,24 @@ export type Database = {
           id?: string;
           role?: Database["public"]["Enums"]["user_role"];
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      stripe_webhook_events: {
+        Row: {
+          created_at: string;
+          id: string;
+          type: string;
+        };
+        Insert: {
+          created_at?: string;
+          id: string;
+          type: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          type?: string;
         };
         Relationships: [];
       };
@@ -332,16 +463,60 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      apply_order_dispute: {
+        Args: { p_amount: number; p_order_id: string; p_stripe_dispute_id: string };
+        Returns: {
+          created_at: string;
+          encrypted_token: string | null;
+          event_id: string;
+          id: string;
+          order_id: string;
+          owner_id: string;
+          secure_token_hash: string;
+          serial: string;
+          status: Database["public"]["Enums"]["ticket_status"];
+          ticket_type_id: string;
+          updated_at: string;
+          used_at: string | null;
+        }[];
+      };
+      apply_ticket_refund: {
+        Args: {
+          p_amount: number;
+          p_platform_fee_refunded: number;
+          p_stripe_refund_id: string;
+          p_ticket_id: string;
+        };
+        Returns: {
+          created_at: string;
+          encrypted_token: string | null;
+          event_id: string;
+          id: string;
+          order_id: string;
+          owner_id: string;
+          secure_token_hash: string;
+          serial: string;
+          status: Database["public"]["Enums"]["ticket_status"];
+          ticket_type_id: string;
+          updated_at: string;
+          used_at: string | null;
+        };
+      };
       cancel_order: {
         Args: { p_order_id: string };
         Returns: {
+          amount_total: number | null;
           buyer_id: string;
           created_at: string;
           event_id: string;
           expires_at: string | null;
           id: string;
+          paid_at: string | null;
+          platform_fee_amount: number | null;
           quantity: number;
           status: Database["public"]["Enums"]["order_status"];
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
           ticket_type_id: string;
           unit_price: number;
           updated_at: string;
@@ -364,28 +539,69 @@ export type Database = {
           used_at: string | null;
         };
       };
-      confirm_order: {
-        Args: { p_order_id: string };
+      confirm_order_paid: {
+        Args: {
+          p_amount_total: number;
+          p_application_fee_amount: number;
+          p_order_id: string;
+          p_stripe_charge_id: string;
+          p_stripe_payment_intent_id: string;
+        };
         Returns: {
-          raw_token: string;
           serial: string;
           ticket_id: string;
+        }[];
+      };
+      get_refundable_ticket: {
+        Args: { p_ticket_id: string };
+        Returns: {
+          order_id: string;
+          platform_fee_amount: number;
+          quantity: number;
+          stripe_payment_intent_id: string;
+          ticket_id: string;
+          unit_price: number;
         }[];
       };
       get_ticket_qr_payload: {
         Args: { p_ticket_id: string };
         Returns: string;
       };
-      reserve_tickets: {
-        Args: { p_quantity: number; p_ticket_type_id: string };
+      mark_order_payment_failed: {
+        Args: { p_order_id: string };
         Returns: {
+          amount_total: number | null;
           buyer_id: string;
           created_at: string;
           event_id: string;
           expires_at: string | null;
           id: string;
+          paid_at: string | null;
+          platform_fee_amount: number | null;
           quantity: number;
           status: Database["public"]["Enums"]["order_status"];
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          ticket_type_id: string;
+          unit_price: number;
+          updated_at: string;
+        };
+      };
+      reserve_tickets: {
+        Args: { p_quantity: number; p_ticket_type_id: string };
+        Returns: {
+          amount_total: number | null;
+          buyer_id: string;
+          created_at: string;
+          event_id: string;
+          expires_at: string | null;
+          id: string;
+          paid_at: string | null;
+          platform_fee_amount: number | null;
+          quantity: number;
+          status: Database["public"]["Enums"]["order_status"];
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
           ticket_type_id: string;
           unit_price: number;
           updated_at: string;
@@ -425,8 +641,8 @@ export type Database = {
         | "comunidad"
         | "otros";
       event_status: "borrador" | "publicado" | "pausado" | "cancelado";
-      order_status: "pendiente" | "pagado" | "expirado" | "cancelado";
-      ticket_status: "active" | "used" | "cancelled" | "refunded" | "expired";
+      order_status: "pendiente" | "pagado" | "expirado" | "cancelado" | "fallido";
+      ticket_status: "active" | "used" | "cancelled" | "refunded" | "expired" | "disputed";
       user_role: "asistente" | "organizador" | "admin";
     };
     CompositeTypes: {
