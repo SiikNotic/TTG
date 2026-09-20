@@ -17,6 +17,7 @@ const STATUS_LABEL: Record<string, { label: string; variant: "success" | "warnin
   cancelled: { label: "Cancelada", variant: "danger" },
   refunded: { label: "Reembolsada", variant: "danger" },
   expired: { label: "Expirada", variant: "warning" },
+  disputed: { label: "En disputa", variant: "warning" },
 };
 
 export default async function MyTicketsPage() {

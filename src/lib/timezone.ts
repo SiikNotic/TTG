@@ -90,6 +90,24 @@ export function formatInTimeZone(iso: string, timeZone: string) {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
+/** Solo la fecha (sin hora), en la zona horaria del evento. */
+export function formatDateInTimeZone(iso: string, timeZone: string) {
+  const formatter = new Intl.DateTimeFormat("es-CO", {
+    timeZone,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const formatted = formatter.format(new Date(iso));
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
+/** Solo la hora (sin fecha), en la zona horaria del evento. */
+export function formatTimeInTimeZone(iso: string, timeZone: string) {
+  return new Intl.DateTimeFormat("es-CO", { timeZone, hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+}
+
 export function timezoneLabel(timeZone: string) {
   return TIMEZONES.find((t) => t.value === timeZone)?.label ?? timeZone;
 }

@@ -108,6 +108,12 @@ export async function getOrderForBuyer(orderId: string) {
   return { order, ticketType: tt, event, tickets: tickets ?? [] };
 }
 
+export interface TicketOrganizerInfo {
+  displayName: string | null;
+  logoUrl: string | null;
+  websiteUrl: string | null;
+}
+
 /** Un ticket, visible para su dueño o para el organizador/admin del evento (según RLS). */
 export async function getTicketForViewer(ticketId: string) {
   const supabase = await createClient();
@@ -127,7 +133,28 @@ export async function getTicketForViewer(ticketId: string) {
   if (!ticketType) return null;
   const { events: event, ...tt } = ticketType as TicketTypeRow & { events: EventRow };
 
-  return { ticket, ticketType: tt, event, isOwner: ticket.owner_id === user.id };
+  const isOwner = ticket.owner_id === user.id;
+
+  // El nombre del comprador viene del perfil, no de lo que el visitante
+  // escriba: esta página solo la puede ver el propio dueño (lectura de su
+  // propio perfil, permitida por RLS), nunca se muestra el de otra persona.
+  const buyerName = isOwner
+    ? (await supabase.from("profiles").select("full_name").eq("id", ticket.owner_id).maybeSingle()).data
+        ?.full_name ?? null
+    : null;
+
+  const { data: organizerRow } = await supabase
+    .from("organizer_profiles")
+    .select("display_name, logo_url, website_url")
+    .eq("id", event.organizer_id)
+    .maybeSingle();
+  const organizer: TicketOrganizerInfo = {
+    displayName: organizerRow?.display_name ?? null,
+    logoUrl: organizerRow?.logo_url ?? null,
+    websiteUrl: organizerRow?.website_url ?? null,
+  };
+
+  return { ticket, ticketType: tt, event, isOwner, buyerName, organizer };
 }
 
 /** Entradas individuales de un tipo de entrada, para que el organizador pueda gestionarlas una por una. */

@@ -233,3 +233,20 @@
     }
   }
 }
+
+/*
+ * "Descargar" el ticket es imprimir a PDF desde el navegador (sin backend
+ * de generación de PDF). @page angosto + fondo blanco forzado para que el
+ * resultado se vea bien en el tamaño de página que use el celular, sin
+ * desperdiciar la hoja en márgenes grandes pensados para escritorio.
+ */
+@media print {
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+}

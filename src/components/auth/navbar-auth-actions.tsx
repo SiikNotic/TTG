@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { User } from "lucide-react";
+import { User, Ticket } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { signOut } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,12 @@ async function NavbarAuthActions() {
 
   return (
     <>
+      <Button asChild size="sm" variant="ghost" className="gap-1.5">
+        <Link href="/mis-tickets">
+          <Ticket className="size-4" />
+          <span className="hidden sm:inline">Mis entradas</span>
+        </Link>
+      </Button>
       <Button asChild size="sm" variant="ghost" className="gap-1.5">
         <Link href="/cuenta">
           {currentUser.avatarUrl ? (
