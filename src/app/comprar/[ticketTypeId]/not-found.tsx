@@ -9,7 +9,9 @@ export default function CheckoutNotFound() {
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Comprar entradas</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Comprar entradas</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
       <main className="mx-auto max-w-xl px-4 py-16 sm:px-6">

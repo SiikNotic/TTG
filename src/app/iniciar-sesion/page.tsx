@@ -11,7 +11,7 @@ interface LoginPageProps {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { next } = await searchParams;
-  const safeNext = isSafeNextPath(next) ? next : "/cuenta";
+  const safeNext = isSafeNextPath(next) ? next : "";
 
   return (
     <AuthShell

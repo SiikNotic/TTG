@@ -71,7 +71,9 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
       />
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Administrar evento</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Administrar evento</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
 

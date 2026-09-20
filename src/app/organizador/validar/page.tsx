@@ -21,7 +21,9 @@ export default async function ValidateTicketPage({ searchParams }: ValidatePageP
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Validar entrada</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Validar entrada</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
 

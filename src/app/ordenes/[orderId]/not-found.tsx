@@ -9,7 +9,9 @@ export default function OrderNotFound() {
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Tu reserva</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Tu reserva</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
       <main className="mx-auto max-w-xl px-4 py-16 sm:px-6">

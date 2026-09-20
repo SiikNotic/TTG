@@ -74,7 +74,7 @@ function EventForm({ action, defaults, submitLabel }: EventFormProps) {
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="category">Categoría</Label>
-          <Select name="category" defaultValue={values.category || undefined}>
+          <Select name="category" defaultValue={values.category || undefined} required>
             <SelectTrigger id="category">
               <SelectValue placeholder="Selecciona una categoría" />
             </SelectTrigger>

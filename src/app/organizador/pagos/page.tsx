@@ -15,7 +15,9 @@ export default async function OrganizerPaymentsPage() {
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Cobros con Stripe</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Cobros con Stripe</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
 

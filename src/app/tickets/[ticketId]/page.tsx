@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { CalendarDays, Clock, MapPin, ShieldAlert, AlertTriangle, User, Ticket as TicketIcon } from "lucide-react";
@@ -61,7 +62,9 @@ export default async function TicketPage({ params }: TicketPageProps) {
       <div className="print:hidden">
         <Navbar>
           <NavbarInner>
-            <NavbarBrand>Tu entrada</NavbarBrand>
+            <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+              <NavbarBrand>Tu entrada</NavbarBrand>
+            </Link>
           </NavbarInner>
         </Navbar>
       </div>

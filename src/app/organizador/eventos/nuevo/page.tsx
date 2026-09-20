@@ -12,7 +12,9 @@ export default function NewEventPage() {
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Nuevo evento</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Nuevo evento</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
 

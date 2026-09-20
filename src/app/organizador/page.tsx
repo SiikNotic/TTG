@@ -28,7 +28,9 @@ export default async function OrganizerDashboardPage() {
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Panel de organizador</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Panel de organizador</NavbarBrand>
+          </Link>
           <NavbarActions>
             <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
               <Link href="/organizador/finanzas">Finanzas</Link>

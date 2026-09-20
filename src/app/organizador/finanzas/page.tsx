@@ -88,7 +88,9 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Finanzas</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Finanzas</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
 

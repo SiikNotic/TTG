@@ -58,12 +58,26 @@ export async function signIn(_prev: ActionState, formData: FormData): Promise<Ac
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) return { error: translateAuthError(error.message) };
 
   revalidatePath("/", "layout");
-  redirect(isSafeNextPath(next) ? next : "/cuenta");
+
+  // Si venía de un intento de acceder a una ruta protegida (ej. el
+  // middleware redirigió a /iniciar-sesion?next=/organizador), respeta ese
+  // destino. Si no, el destino depende del rol: cada tipo de cuenta tiene
+  // un "home" distinto.
+  if (isSafeNextPath(next)) redirect(next);
+
+  const userId = data.user?.id;
+  const { data: profile } = userId
+    ? await supabase.from("profiles").select("role").eq("id", userId).single()
+    : { data: null };
+
+  if (profile?.role === "admin") redirect("/admin");
+  if (profile?.role === "organizador") redirect("/organizador");
+  redirect("/");
 }
 
 export async function signOut() {

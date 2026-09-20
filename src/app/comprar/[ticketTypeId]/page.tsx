@@ -38,7 +38,9 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
       />
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Comprar entradas</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Comprar entradas</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
 

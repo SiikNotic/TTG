@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
 import { AdminNav } from "./admin-nav";
 
@@ -7,7 +8,9 @@ function AdminShell({ active, title, children }: { active: string; title: string
     <div className="min-h-screen bg-background">
       <Navbar className="pb-0">
         <NavbarInner>
-          <NavbarBrand>Administración</NavbarBrand>
+          <Link href="/admin" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Administración</NavbarBrand>
+          </Link>
         </NavbarInner>
         <AdminNav active={active} />
       </Navbar>

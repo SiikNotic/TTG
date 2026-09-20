@@ -27,7 +27,9 @@ export default async function MyTicketsPage() {
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Mis entradas</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Mis entradas</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
 

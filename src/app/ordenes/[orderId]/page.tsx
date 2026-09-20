@@ -39,7 +39,9 @@ export default async function OrderPage({ params }: OrderPageProps) {
       />
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Tu reserva</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Tu reserva</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MailWarning, MailCheck, ShieldAlert } from "lucide-react";
 import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
@@ -48,7 +49,9 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     <div className="min-h-screen bg-background">
       <Navbar>
         <NavbarInner>
-          <NavbarBrand>Mi cuenta</NavbarBrand>
+          <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+            <NavbarBrand>Mi cuenta</NavbarBrand>
+          </Link>
         </NavbarInner>
       </Navbar>
 

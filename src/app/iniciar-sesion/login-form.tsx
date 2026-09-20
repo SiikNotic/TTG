@@ -7,6 +7,7 @@ import { INITIAL_ACTION_STATE } from "@/lib/actions/action-state";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FormAlert } from "@/components/auth/form-alert";
+import { PasswordInput } from "@/components/auth/password-input";
 import { SubmitButton } from "@/components/auth/submit-button";
 
 function LoginForm({ next }: { next: string }) {
@@ -29,7 +30,7 @@ function LoginForm({ next }: { next: string }) {
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required />
+        <PasswordInput id="password" name="password" autoComplete="current-password" required />
       </div>
 
       <SubmitButton>Iniciar sesión</SubmitButton>
