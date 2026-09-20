@@ -10,7 +10,7 @@ async function NavbarAuthActions() {
   if (!currentUser) {
     return (
       <>
-        <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
+        <Button asChild size="sm" variant="ghost">
           <Link href="/iniciar-sesion">Iniciar sesión</Link>
         </Button>
         <Button asChild size="sm">
