@@ -6,9 +6,6 @@ import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { stripe } from "@/lib/stripe/server";
 import { toStripeAmount } from "@/lib/payments/fees";
 import type { ActionState } from "@/lib/actions/action-state";
-import type { TicketCheckResult } from "@/lib/actions/ticket-check-state";
-
-export type { TicketCheckResult } from "@/lib/actions/ticket-check-state";
 
 const ERROR_MESSAGES: Record<string, string> = {
   TICKET_NOT_FOUND: "Ticket no encontrado.",
@@ -28,7 +25,7 @@ function translateTicketError(message: string | undefined): string {
   return "Ocurrió un error. Intenta de nuevo.";
 }
 
-async function setTicketStatus(ticketId: string, status: "refunded" | "cancelled" | "used"): Promise<ActionState> {
+async function setTicketStatus(ticketId: string, status: "cancelled"): Promise<ActionState> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("set_ticket_status_by_organizer", {
     p_ticket_id: ticketId,
@@ -104,25 +101,6 @@ export async function cancelTicket(_prev: ActionState, formData: FormData): Prom
   if (!ticketId) return { error: "Ticket inválido." };
   const result = await setTicketStatus(ticketId, "cancelled");
   return result.error ? result : { success: "Ticket cancelado. El cupo vuelve a estar disponible." };
-}
-
-export async function markTicketUsed(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const ticketId = String(formData.get("ticketId") ?? "");
-  if (!ticketId) return { error: "Ticket inválido." };
-  const result = await setTicketStatus(ticketId, "used");
-  return result.error ? result : { success: "Ingreso registrado." };
-}
-
-/** Chequeo de solo lectura: resuelve el token y devuelve el ticket, sin mutarlo. */
-export async function checkTicketToken(_prev: TicketCheckResult, formData: FormData): Promise<TicketCheckResult> {
-  const token = String(formData.get("token") ?? "").trim();
-  if (!token) return { error: "Ingresa o escanea un código." };
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("check_ticket_token", { p_raw_token: token });
-
-  if (error || !data) return { error: translateTicketError(error?.message) };
-  return { ticket: data };
 }
 
 export async function getTicketQrPayload(ticketId: string): Promise<{ token?: string; error?: string }> {

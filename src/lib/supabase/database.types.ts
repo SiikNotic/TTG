@@ -522,23 +522,6 @@ export type Database = {
           updated_at: string;
         };
       };
-      check_ticket_token: {
-        Args: { p_raw_token: string };
-        Returns: {
-          created_at: string;
-          encrypted_token: string | null;
-          event_id: string;
-          id: string;
-          order_id: string;
-          owner_id: string;
-          secure_token_hash: string;
-          serial: string;
-          status: Database["public"]["Enums"]["ticket_status"];
-          ticket_type_id: string;
-          updated_at: string;
-          used_at: string | null;
-        };
-      };
       confirm_order_paid: {
         Args: {
           p_amount_total: number;
@@ -606,6 +589,15 @@ export type Database = {
           unit_price: number;
           updated_at: string;
         };
+      };
+      scan_ticket: {
+        Args: { p_event_id: string; p_raw_token: string };
+        Returns: {
+          result: string;
+          serial: string;
+          ticket_id: string;
+          ticket_type_name: string;
+        }[];
       };
       set_ticket_status_by_organizer: {
         Args: {
