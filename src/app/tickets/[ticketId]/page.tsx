@@ -4,15 +4,16 @@ import { CalendarDays, Clock, MapPin, ShieldAlert, AlertTriangle, User, Ticket a
 import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
-import { EventCover } from "@/components/discover/event-cover";
+import { EventThumbnail } from "@/components/discover/event-thumbnail";
 import { getTicketForViewer } from "@/lib/tickets";
 import { getTicketQrPayload } from "@/lib/actions/tickets";
 import { getCategoryMeta } from "@/lib/categories";
 import { formatDateInTimeZone, formatTimeInTimeZone } from "@/lib/timezone";
 import { parseRules, ruleDescriptions } from "@/lib/event-rules";
+import { ShareButton } from "@/components/share-button";
 import { PrintButton } from "./print-button";
-import { ShareButton } from "./share-button";
 
 export const dynamic = "force-dynamic";
 
@@ -78,14 +79,14 @@ export default async function TicketPage({ params }: TicketPageProps) {
         )}
 
         <Card className="overflow-hidden print:border-none print:shadow-none">
-          <div className="aspect-video w-full">
-            {event.cover_image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element -- portada viene de Supabase Storage.
-              <img src={event.cover_image_url} alt="" className="size-full object-cover" />
-            ) : (
-              <EventCover category={event.category} className="size-full" iconClassName="size-10" />
-            )}
-          </div>
+          <EventThumbnail
+            category={event.category}
+            coverImageUrl={event.cover_image_url}
+            alt=""
+            className="aspect-video w-full"
+            iconClassName="size-10"
+            sizes="(min-width: 640px) 512px, 100vw"
+          />
 
           <div className="border-b border-border bg-accent px-5 py-4">
             <div className="flex items-center justify-between gap-2">
@@ -157,8 +158,9 @@ export default async function TicketPage({ params }: TicketPageProps) {
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Organizador</p>
               <div className="flex items-center gap-3">
                 {organizer.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- logo viene de Supabase Storage.
-                  <img src={organizer.logoUrl} alt="" className="size-10 shrink-0 rounded-full object-cover" />
+                  <div className="relative size-10 shrink-0 overflow-hidden rounded-full">
+                    <Image src={organizer.logoUrl} alt="" fill sizes="40px" className="object-cover" />
+                  </div>
                 ) : (
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-hover text-sm font-semibold text-muted-foreground">
                     {(organizer.displayName || "?").charAt(0).toUpperCase()}

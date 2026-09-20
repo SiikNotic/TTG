@@ -4,7 +4,7 @@ import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/state-message";
-import { EventCover } from "@/components/discover/event-cover";
+import { EventThumbnail } from "@/components/discover/event-thumbnail";
 import { getMyTickets } from "@/lib/tickets";
 import { getCategoryMeta } from "@/lib/categories";
 import { formatInTimeZone } from "@/lib/timezone";
@@ -51,6 +51,7 @@ export default async function MyTicketsPage() {
                   timezone: string;
                   venue_name: string;
                   city: string;
+                  cover_image_url: string | null;
                   category: Parameters<typeof getCategoryMeta>[0];
                 };
               } | null;
@@ -61,7 +62,16 @@ export default async function MyTicketsPage() {
                 <Link key={ticket.id} href={`/tickets/${ticket.id}`} className="block rounded-lg">
                   <Card interactive className="flex items-center gap-4 overflow-hidden p-0">
                     <div className="size-20 shrink-0">
-                      {event && <EventCover category={event.category} className="size-full" iconClassName="size-5" />}
+                      {event && (
+                        <EventThumbnail
+                          category={event.category}
+                          coverImageUrl={event.cover_image_url}
+                          alt=""
+                          className="size-full"
+                          iconClassName="size-5"
+                          sizes="80px"
+                        />
+                      )}
                     </div>
                     <div className="flex flex-1 flex-col gap-1 py-3 pr-4">
                       <div className="flex items-center gap-2">

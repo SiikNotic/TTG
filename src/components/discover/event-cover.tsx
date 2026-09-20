@@ -1,4 +1,4 @@
-import { getCategoryMeta, type EventCategory } from "@/data/events";
+import { getCategoryMeta, type EventCategory } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 
 interface EventCoverProps {
@@ -8,9 +8,9 @@ interface EventCoverProps {
 }
 
 /**
- * Portada del evento generada con gradientes CSS a partir de los tokens
- * de marca (sin peso de red ni imágenes que optimizar). Evita el riesgo
- * de mostrar fotografía que parezca real de un evento que no existe.
+ * Portada de respaldo generada con gradientes CSS a partir de los tokens de
+ * marca: se usa cuando el organizador todavía no subió una imagen real para
+ * el evento (ver EventThumbnail, que decide entre esta y la foto real).
  */
 function EventCover({ category, className, iconClassName }: EventCoverProps) {
   const meta = getCategoryMeta(category);

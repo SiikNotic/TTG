@@ -73,7 +73,7 @@ function TicketTypeManager({ eventId, ticketTypes }: { eventId: string; ticketTy
       ) : (
         <div className="flex flex-col gap-2">
           {ticketTypes.map((t) => (
-            <Card key={t.id} className="flex items-center justify-between gap-3 p-4">
+            <Card key={t.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-foreground">{t.name}</p>
                 <p className="text-xs text-muted-foreground">

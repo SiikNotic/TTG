@@ -7,16 +7,18 @@ import { EmptyState } from "@/components/ui/state-message";
 import { EventCard } from "@/components/discover/event-card";
 import { CategoryFilter } from "@/components/discover/category-filter";
 import { FiltersBar, type CityFilter, type DateFilter, type PriceFilter } from "@/components/discover/filters-bar";
-import type { EventCategory, EventRecord } from "@/data/events";
+import type { EventCategory } from "@/lib/categories";
+import type { PublicEventSummary } from "@/lib/discovery";
 
 interface EventDiscoveryProps {
-  featuredEvents: EventRecord[];
-  events: EventRecord[];
+  events: PublicEventSummary[];
 }
 
-function matchesDate(event: EventRecord, filter: DateFilter) {
+const FEATURED_COUNT = 3;
+
+function matchesDate(event: PublicEventSummary, filter: DateFilter) {
   if (filter === "cualquiera") return true;
-  const start = new Date(event.dateStart);
+  const start = new Date(event.startsAt);
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -43,12 +45,17 @@ function matchesDate(event: EventRecord, filter: DateFilter) {
   return true;
 }
 
-function EventDiscovery({ featuredEvents, events }: EventDiscoveryProps) {
+function EventDiscovery({ events }: EventDiscoveryProps) {
   const [search, setSearch] = React.useState("");
   const [category, setCategory] = React.useState<EventCategory | "todas">("todas");
   const [date, setDate] = React.useState<DateFilter>("cualquiera");
   const [price, setPrice] = React.useState<PriceFilter>("cualquiera");
   const [city, setCity] = React.useState<CityFilter>("todas");
+
+  const cities = React.useMemo(
+    () => Array.from(new Set(events.map((e) => e.city))).sort((a, b) => a.localeCompare(b)),
+    [events]
+  );
 
   const filtered = React.useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -67,6 +74,7 @@ function EventDiscovery({ featuredEvents, events }: EventDiscoveryProps) {
   }, [events, category, city, price, date, search]);
 
   const hasActiveFilters = search.trim() !== "" || category !== "todas" || date !== "cualquiera" || price !== "cualquiera" || city !== "todas";
+  const featuredEvents = events.slice(0, FEATURED_COUNT);
 
   return (
     <div className="flex flex-col gap-8">
@@ -87,12 +95,13 @@ function EventDiscovery({ featuredEvents, events }: EventDiscoveryProps) {
           onPriceChange={setPrice}
           city={city}
           onCityChange={setCity}
+          cities={cities}
         />
       </div>
 
       {!hasActiveFilters && featuredEvents.length > 0 && (
         <section>
-          <h2 className="mb-4 text-lg font-semibold text-foreground">Eventos destacados</h2>
+          <h2 className="mb-4 text-lg font-semibold text-foreground">Próximamente</h2>
           <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
             {featuredEvents.map((event) => (
               <div key={event.id} className="snap-start">

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus, CalendarDays } from "lucide-react";
-import { Navbar, NavbarInner, NavbarBrand, NavbarActions } from "@/components/ui/navbar";
+import { Navbar, NavbarInner, NavbarBrand, NavbarActions, NavbarMobileMenu } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/state-message";
@@ -30,13 +30,13 @@ export default async function OrganizerDashboardPage() {
         <NavbarInner>
           <NavbarBrand>Panel de organizador</NavbarBrand>
           <NavbarActions>
-            <Button asChild size="sm" variant="ghost">
+            <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
               <Link href="/organizador/finanzas">Finanzas</Link>
             </Button>
-            <Button asChild size="sm" variant="ghost">
+            <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
               <Link href="/organizador/pagos">Pagos</Link>
             </Button>
-            <Button asChild size="sm" variant="ghost">
+            <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
               <Link href="/organizador/perfil">Perfil</Link>
             </Button>
             <Button asChild size="sm">
@@ -44,6 +44,17 @@ export default async function OrganizerDashboardPage() {
                 <Plus className="size-4" /> Crear evento
               </Link>
             </Button>
+            <NavbarMobileMenu>
+              <Button asChild size="sm" variant="ghost" className="w-full justify-start">
+                <Link href="/organizador/finanzas">Finanzas</Link>
+              </Button>
+              <Button asChild size="sm" variant="ghost" className="w-full justify-start">
+                <Link href="/organizador/pagos">Pagos</Link>
+              </Button>
+              <Button asChild size="sm" variant="ghost" className="w-full justify-start">
+                <Link href="/organizador/perfil">Perfil</Link>
+              </Button>
+            </NavbarMobileMenu>
           </NavbarActions>
         </NavbarInner>
       </Navbar>

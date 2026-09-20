@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CalendarDays, MapPin, Ticket as TicketIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { EventCover } from "@/components/discover/event-cover";
+import { EventThumbnail } from "@/components/discover/event-thumbnail";
 import { EventStatusBadge } from "@/components/organizer/event-status-badge";
 import { getCategoryMeta } from "@/lib/categories";
 import { formatInTimeZone } from "@/lib/timezone";
@@ -19,12 +19,14 @@ function OrganizerEventCard({ event }: { event: OrganizerEventWithCounts }) {
     >
       <Card interactive className="flex flex-col gap-0 overflow-hidden sm:flex-row">
         <div className="sm:w-48 sm:shrink-0">
-          {event.cover_image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element -- viene de Supabase Storage.
-            <img src={event.cover_image_url} alt="" className="aspect-video size-full object-cover sm:aspect-square" />
-          ) : (
-            <EventCover category={event.category} className="aspect-video size-full sm:aspect-square" iconClassName="size-6" />
-          )}
+          <EventThumbnail
+            category={event.category}
+            coverImageUrl={event.cover_image_url}
+            alt=""
+            className="aspect-video size-full sm:aspect-square"
+            iconClassName="size-6"
+            sizes="(min-width: 640px) 192px, 100vw"
+          />
         </div>
         <div className="flex flex-1 flex-col gap-2 p-4">
           <div className="flex flex-wrap items-center gap-2">

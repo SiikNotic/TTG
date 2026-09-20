@@ -1,6 +1,5 @@
 "use client";
 
-import { CITIES } from "@/data/events";
 import {
   Select,
   SelectContent,
@@ -11,7 +10,7 @@ import {
 
 export type DateFilter = "cualquiera" | "hoy" | "finde" | "mes";
 export type PriceFilter = "cualquiera" | "gratis" | "pago";
-export type CityFilter = "todas" | (typeof CITIES)[number];
+export type CityFilter = string;
 
 interface FiltersBarProps {
   date: DateFilter;
@@ -20,9 +19,10 @@ interface FiltersBarProps {
   onPriceChange: (value: PriceFilter) => void;
   city: CityFilter;
   onCityChange: (value: CityFilter) => void;
+  cities: string[];
 }
 
-function FiltersBar({ date, onDateChange, price, onPriceChange, city, onCityChange }: FiltersBarProps) {
+function FiltersBar({ date, onDateChange, price, onPriceChange, city, onCityChange, cities }: FiltersBarProps) {
   return (
     <div className="flex flex-wrap gap-2">
       <Select value={date} onValueChange={(v) => onDateChange(v as DateFilter)}>
@@ -48,19 +48,21 @@ function FiltersBar({ date, onDateChange, price, onPriceChange, city, onCityChan
         </SelectContent>
       </Select>
 
-      <Select value={city} onValueChange={(v) => onCityChange(v as CityFilter)}>
-        <SelectTrigger className="w-auto min-w-36">
-          <SelectValue placeholder="Ciudad" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="todas">Todas las ciudades</SelectItem>
-          {CITIES.map((c) => (
-            <SelectItem key={c} value={c}>
-              {c}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {cities.length > 0 && (
+        <Select value={city} onValueChange={onCityChange}>
+          <SelectTrigger className="w-auto min-w-36">
+            <SelectValue placeholder="Ciudad" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas las ciudades</SelectItem>
+            {cities.map((c) => (
+              <SelectItem key={c} value={c}>
+                {c}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 }

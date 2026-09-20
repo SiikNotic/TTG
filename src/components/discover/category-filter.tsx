@@ -1,6 +1,6 @@
 "use client";
 
-import { CATEGORIES, type EventCategory } from "@/data/events";
+import { CATEGORIES, type EventCategory } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 
 interface CategoryFilterProps {

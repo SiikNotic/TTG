@@ -2,14 +2,15 @@ import Link from "next/link";
 import { MapPin, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { EventCover } from "@/components/discover/event-cover";
-import { EventStatusBadge } from "@/components/discover/event-status-badge";
-import { getCategoryMeta, type EventRecord } from "@/data/events";
-import { formatDateShort, formatPrice, formatTime } from "@/lib/format";
+import { EventThumbnail } from "@/components/discover/event-thumbnail";
+import { getCategoryMeta } from "@/lib/categories";
+import { formatDateShortInTimeZone, formatTimeInTimeZone } from "@/lib/timezone";
+import { formatPrice } from "@/lib/format";
+import type { PublicEventSummary } from "@/lib/discovery";
 import { cn } from "@/lib/utils";
 
 interface EventCardProps {
-  event: EventRecord;
+  event: PublicEventSummary;
   variant?: "default" | "featured";
   className?: string;
 }
@@ -28,12 +29,18 @@ function EventCard({ event, variant = "default", className }: EventCardProps) {
       )}
     >
       <Card interactive className="flex h-full flex-col overflow-hidden">
-        <EventCover category={event.category} className={isFeatured ? "aspect-[4/3]" : "aspect-video"} />
+        <EventThumbnail
+          category={event.category}
+          coverImageUrl={event.coverImageUrl}
+          alt=""
+          className={isFeatured ? "aspect-[4/3]" : "aspect-video"}
+          sizes={isFeatured ? "320px" : "(min-width: 1024px) 360px, (min-width: 640px) 45vw, 90vw"}
+        />
         <div className="flex flex-col gap-2 p-4">
           <div className="flex items-center justify-between gap-2">
             <Badge variant="brand">{category.label}</Badge>
-            {event.status !== "disponible" ? (
-              <EventStatusBadge status={event.status} />
+            {event.soldOut ? (
+              <Badge variant="warning">Agotado</Badge>
             ) : event.lowStock ? (
               <Badge variant="warning">Últimos cupos</Badge>
             ) : null}
@@ -46,7 +53,8 @@ function EventCard({ event, variant = "default", className }: EventCardProps) {
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Clock className="size-3.5 shrink-0" />
             <span>
-              {formatDateShort(event.dateStart)} · {formatTime(event.dateStart)}
+              {formatDateShortInTimeZone(event.startsAt, event.timezone)} ·{" "}
+              {formatTimeInTimeZone(event.startsAt, event.timezone)}
             </span>
           </div>
 
@@ -61,9 +69,6 @@ function EventCard({ event, variant = "default", className }: EventCardProps) {
             <span className="text-sm font-semibold text-foreground">
               {event.priceFrom === 0 ? "Gratis" : <>Desde {formatPrice(event.priceFrom)}</>}
             </span>
-            {typeof event.distanceKm === "number" && (
-              <span className="text-xs text-muted-foreground">a {event.distanceKm} km</span>
-            )}
           </div>
         </div>
       </Card>

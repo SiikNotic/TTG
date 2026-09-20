@@ -16,28 +16,32 @@ function Pagination({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="mt-4 flex items-center justify-between">
-      {page > 0 ? (
-        <Button asChild size="sm" variant="outline">
-          <Link href={buildHref(page - 1)}>Anterior</Link>
-        </Button>
-      ) : (
-        <Button size="sm" variant="outline" disabled>
-          Anterior
-        </Button>
-      )}
-      <span className="text-xs text-muted-foreground">
+    <div className="mt-4 flex items-center justify-between gap-2">
+      <div className="shrink-0">
+        {page > 0 ? (
+          <Button asChild size="sm" variant="outline">
+            <Link href={buildHref(page - 1)}>Anterior</Link>
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" disabled>
+            Anterior
+          </Button>
+        )}
+      </div>
+      <span className="min-w-0 flex-1 truncate text-center text-xs text-muted-foreground">
         Página {page + 1} de {totalPages} · {totalCount} resultados
       </span>
-      {page < totalPages - 1 ? (
-        <Button asChild size="sm" variant="outline">
-          <Link href={buildHref(page + 1)}>Siguiente</Link>
-        </Button>
-      ) : (
-        <Button size="sm" variant="outline" disabled>
-          Siguiente
-        </Button>
-      )}
+      <div className="shrink-0">
+        {page < totalPages - 1 ? (
+          <Button asChild size="sm" variant="outline">
+            <Link href={buildHref(page + 1)}>Siguiente</Link>
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" disabled>
+            Siguiente
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

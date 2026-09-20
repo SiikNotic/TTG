@@ -90,6 +90,18 @@ export function formatInTimeZone(iso: string, timeZone: string) {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
+/** Fecha corta (para tarjetas/listas), en la zona horaria del evento. */
+export function formatDateShortInTimeZone(iso: string, timeZone: string) {
+  const formatter = new Intl.DateTimeFormat("es-CO", {
+    timeZone,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+  const formatted = formatter.format(new Date(iso));
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
 /** Solo la fecha (sin hora), en la zona horaria del evento. */
 export function formatDateInTimeZone(iso: string, timeZone: string) {
   const formatter = new Intl.DateTimeFormat("es-CO", {
