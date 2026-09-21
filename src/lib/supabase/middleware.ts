@@ -14,13 +14,13 @@ const ROLE_PREFIXES: { prefix: string; roles: UserRole[] }[] = [
 ];
 
 /**
- * Dentro de /organizador (gateado a organizador/admin), el escáner acepta
- * además a cualquier usuario autenticado con una invitación de staff
- * aceptada: la autorización fina (qué evento puede escanear) la hace la
- * página/RPC, no el middleware. Sin esto, un staff con role='asistente'
- * nunca podría entrar a /organizador/validar.
+ * Dentro de /organizador (gateado a organizador/admin), el escáner y la
+ * venta en efectivo aceptan además a cualquier usuario autenticado con una
+ * invitación de staff aceptada: la autorización fina (qué evento puede
+ * escanear/vender) la hace la página/RPC, no el middleware. Sin esto, un
+ * staff con role='asistente' nunca podría entrar a estas rutas.
  */
-const STAFF_OVERRIDE_PREFIXES = ["/organizador/validar"];
+const STAFF_OVERRIDE_PREFIXES = ["/organizador/validar", "/organizador/venta-efectivo"];
 
 /** Rutas de auth que no tienen sentido si ya hay sesión activa. */
 const AUTH_ONLY_PREFIXES = ["/iniciar-sesion", "/registro"];

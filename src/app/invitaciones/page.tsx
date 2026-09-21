@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ScanLine, Mail } from "lucide-react";
+import { ScanLine, Mail, Banknote } from "lucide-react";
 import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -85,11 +85,20 @@ export default async function InvitationsPage() {
                             {i.event_title_snapshot ?? "Todo el negocio"}
                           </p>
                         </div>
-                        <Button asChild size="sm">
-                          <Link href={i.event_id ? `/organizador/validar?eventId=${i.event_id}` : "/organizador/validar"}>
-                            <ScanLine className="size-4" /> Escanear
-                          </Link>
-                        </Button>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <Button asChild size="sm" variant="outline">
+                            <Link
+                              href={i.event_id ? `/organizador/venta-efectivo?eventId=${i.event_id}` : "/organizador/venta-efectivo"}
+                            >
+                              <Banknote className="size-4" /> Efectivo
+                            </Link>
+                          </Button>
+                          <Button asChild size="sm">
+                            <Link href={i.event_id ? `/organizador/validar?eventId=${i.event_id}` : "/organizador/validar"}>
+                              <ScanLine className="size-4" /> Escanear
+                            </Link>
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}

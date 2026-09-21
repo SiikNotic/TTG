@@ -209,9 +209,11 @@ export type Database = {
           expires_at: string | null
           id: string
           paid_at: string | null
+          payment_method: Database["public"]["Enums"]["order_payment_method"]
           payout_rail: Database["public"]["Enums"]["payout_method"]
           platform_fee_amount: number | null
           quantity: number
+          sold_by: string | null
           status: Database["public"]["Enums"]["order_status"]
           stripe_checkout_session_id: string | null
           stripe_payment_intent_id: string | null
@@ -227,9 +229,11 @@ export type Database = {
           expires_at?: string | null
           id?: string
           paid_at?: string | null
+          payment_method?: Database["public"]["Enums"]["order_payment_method"]
           payout_rail?: Database["public"]["Enums"]["payout_method"]
           platform_fee_amount?: number | null
           quantity: number
+          sold_by?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           stripe_checkout_session_id?: string | null
           stripe_payment_intent_id?: string | null
@@ -245,9 +249,11 @@ export type Database = {
           expires_at?: string | null
           id?: string
           paid_at?: string | null
+          payment_method?: Database["public"]["Enums"]["order_payment_method"]
           payout_rail?: Database["public"]["Enums"]["payout_method"]
           platform_fee_amount?: number | null
           quantity?: number
+          sold_by?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           stripe_checkout_session_id?: string | null
           stripe_payment_intent_id?: string | null
@@ -268,6 +274,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_sold_by_fkey"
+            columns: ["sold_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -953,9 +966,11 @@ export type Database = {
           expires_at: string | null
           id: string
           paid_at: string | null
+          payment_method: Database["public"]["Enums"]["order_payment_method"]
           payout_rail: Database["public"]["Enums"]["payout_method"]
           platform_fee_amount: number | null
           quantity: number
+          sold_by: string | null
           status: Database["public"]["Enums"]["order_status"]
           stripe_checkout_session_id: string | null
           stripe_payment_intent_id: string | null
@@ -973,6 +988,14 @@ export type Database = {
           p_stripe_payment_intent_id: string
         }
         Returns: {
+          serial: string
+          ticket_id: string
+        }[]
+      }
+      create_cash_sale: {
+        Args: { p_quantity: number; p_ticket_type_id: string }
+        Returns: {
+          order_id: string
           serial: string
           ticket_id: string
         }[]
@@ -1026,9 +1049,11 @@ export type Database = {
           expires_at: string | null
           id: string
           paid_at: string | null
+          payment_method: Database["public"]["Enums"]["order_payment_method"]
           payout_rail: Database["public"]["Enums"]["payout_method"]
           platform_fee_amount: number | null
           quantity: number
+          sold_by: string | null
           status: Database["public"]["Enums"]["order_status"]
           stripe_checkout_session_id: string | null
           stripe_payment_intent_id: string | null
@@ -1047,9 +1072,11 @@ export type Database = {
           expires_at: string | null
           id: string
           paid_at: string | null
+          payment_method: Database["public"]["Enums"]["order_payment_method"]
           payout_rail: Database["public"]["Enums"]["payout_method"]
           platform_fee_amount: number | null
           quantity: number
+          sold_by: string | null
           status: Database["public"]["Enums"]["order_status"]
           stripe_checkout_session_id: string | null
           stripe_payment_intent_id: string | null
@@ -1124,6 +1151,7 @@ export type Database = {
         | "comunidad"
         | "otros"
       event_status: "borrador" | "publicado" | "pausado" | "cancelado"
+      order_payment_method: "online" | "cash"
       order_status:
         | "pendiente"
         | "pagado"
@@ -1280,6 +1308,7 @@ export const Constants = {
         "otros",
       ],
       event_status: ["borrador", "publicado", "pausado", "cancelado"],
+      order_payment_method: ["online", "cash"],
       order_status: ["pendiente", "pagado", "expirado", "cancelado", "fallido"],
       payout_method: ["stripe", "paypal", "ath_movil"],
       staff_invite_status: ["pendiente", "aceptada", "rechazada", "revocada"],

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, CalendarDays, Wallet, Store, CreditCard, UserCircle2, Users } from "lucide-react";
+import { Plus, CalendarDays, Wallet, Store, CreditCard, UserCircle2, Users, Banknote } from "lucide-react";
 import { Navbar, NavbarInner, NavbarBrand, NavbarActions, NavbarMobileMenu } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -45,6 +45,9 @@ export default async function OrganizerDashboardPage() {
               <Link href="/organizador/staff">Staff</Link>
             </Button>
             <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
+              <Link href="/organizador/venta-efectivo">Efectivo</Link>
+            </Button>
+            <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
               <Link href="/organizador/perfil">Perfil</Link>
             </Button>
             <Button asChild size="sm">
@@ -71,6 +74,11 @@ export default async function OrganizerDashboardPage() {
               <Button asChild size="md" variant="ghost" className="w-full justify-start">
                 <Link href="/organizador/staff">
                   <Users /> Staff
+                </Link>
+              </Button>
+              <Button asChild size="md" variant="ghost" className="w-full justify-start">
+                <Link href="/organizador/venta-efectivo">
+                  <Banknote /> Venta en efectivo
                 </Link>
               </Button>
               <Button asChild size="md" variant="ghost" className="w-full justify-start">
