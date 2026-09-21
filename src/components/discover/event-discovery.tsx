@@ -78,14 +78,14 @@ function EventDiscovery({ events }: EventDiscoveryProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <Input
           startIcon={<Search />}
           placeholder="Buscar eventos, lugares o ciudades..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Buscar eventos"
-          className="h-12 text-base"
+          className="h-11 text-base"
         />
         <CategoryFilter value={category} onChange={setCategory} />
         <FiltersBar

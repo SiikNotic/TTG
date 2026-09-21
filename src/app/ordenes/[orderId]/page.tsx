@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { EventThumbnail } from "@/components/discover/event-thumbnail";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { getOrderForBuyer } from "@/lib/tickets";
 import { formatPrice } from "@/lib/format";
@@ -46,10 +47,21 @@ export default async function OrderPage({ params }: OrderPageProps) {
       </Navbar>
 
       <main className="mx-auto max-w-lg px-4 py-8 sm:px-6">
-        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-foreground">{event.title}</h1>
-        <p className="mb-6 text-sm text-muted-foreground">
-          {order.quantity} × {ticketType.name} · {formatPrice(order.unit_price)} c/u
-        </p>
+        <div className="mb-6 flex items-center gap-3">
+          <EventThumbnail
+            category={event.category}
+            coverImageUrl={event.cover_image_url}
+            alt=""
+            className="aspect-square w-16 shrink-0 rounded-lg"
+            sizes="64px"
+          />
+          <div className="min-w-0">
+            <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">{event.title}</h1>
+            <p className="text-sm text-muted-foreground">
+              {order.quantity} × {ticketType.name} · {formatPrice(order.unit_price)} c/u
+            </p>
+          </div>
+        </div>
 
         {effectiveStatus === "pendiente" && (
           <Card>

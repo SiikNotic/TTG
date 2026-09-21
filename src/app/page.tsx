@@ -1,5 +1,5 @@
-import { Ticket } from "lucide-react";
 import { Navbar, NavbarInner, NavbarBrand, NavbarActions } from "@/components/ui/navbar";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { NavbarAuthActions } from "@/components/auth/navbar-auth-actions";
 import { EventDiscovery } from "@/components/discover/event-discovery";
 import { getPublicUpcomingEvents } from "@/lib/discovery";
@@ -14,9 +14,7 @@ export default async function Home() {
       <Navbar>
         <NavbarInner>
           <NavbarBrand>
-            <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Ticket className="size-4" />
-            </span>
+            <BrandMark />
             TTG
           </NavbarBrand>
           <NavbarActions>

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Ticket } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { BrandMark } from "@/components/ui/brand-mark";
 
 interface AuthShellProps {
   title: string;
@@ -14,9 +14,7 @@ function AuthShell({ title, description, children, footer }: AuthShellProps) {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="px-4 py-6 sm:px-6">
         <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
-          <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Ticket className="size-4" />
-          </span>
+          <BrandMark />
           TTG
         </Link>
       </header>

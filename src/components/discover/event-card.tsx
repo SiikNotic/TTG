@@ -33,11 +33,11 @@ function EventCard({ event, variant = "default", className }: EventCardProps) {
           category={event.category}
           coverImageUrl={event.coverImageUrl}
           alt=""
-          className={isFeatured ? "aspect-[4/3]" : "aspect-video"}
+          className="aspect-[4/3]"
           sizes={isFeatured ? "320px" : "(min-width: 1024px) 360px, (min-width: 640px) 45vw, 90vw"}
         />
-        <div className="flex flex-col gap-2 p-4">
-          <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-1 flex-col gap-1.5 p-3.5">
+          <div className="flex items-center gap-1.5">
             <Badge variant="brand">{category.label}</Badge>
             {event.soldOut ? (
               <Badge variant="warning">Agotado</Badge>
@@ -50,26 +50,25 @@ function EventCard({ event, variant = "default", className }: EventCardProps) {
             {event.title}
           </h3>
 
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="size-3.5 shrink-0" />
-            <span>
-              {formatDateShortInTimeZone(event.startsAt, event.timezone)} ·{" "}
-              {formatTimeInTimeZone(event.startsAt, event.timezone)}
-            </span>
+          <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Clock className="size-3.5 shrink-0" />
+              <span>
+                {formatDateShortInTimeZone(event.startsAt, event.timezone)} ·{" "}
+                {formatTimeInTimeZone(event.startsAt, event.timezone)}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <MapPin className="size-3.5 shrink-0" />
+              <span className="truncate">
+                {event.venueName} · {event.city}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <MapPin className="size-3.5 shrink-0" />
-            <span className="truncate">
-              {event.venueName} · {event.city}
-            </span>
-          </div>
-
-          <div className="mt-1 flex items-center justify-between border-t border-border pt-3">
-            <span className="text-sm font-semibold text-foreground">
-              {event.priceFrom === 0 ? "Gratis" : <>Desde {formatPrice(event.priceFrom)}</>}
-            </span>
-          </div>
+          <span className="mt-auto pt-2 text-base font-semibold text-foreground">
+            {event.priceFrom === 0 ? "Gratis" : <>Desde {formatPrice(event.priceFrom)}</>}
+          </span>
         </div>
       </Card>
     </Link>

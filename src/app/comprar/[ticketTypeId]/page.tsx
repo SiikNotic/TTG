@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarDays, MapPin, Ticket as TicketIcon } from "lucide-re
 import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EventThumbnail } from "@/components/discover/event-thumbnail";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { getTicketTypeForPurchase, getTicketTypeInventory } from "@/lib/tickets";
 import { getCategoryMeta } from "@/lib/categories";
@@ -53,10 +54,21 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
           Volver al evento
         </Link>
 
-        <div className="mb-2 flex items-center gap-2">
-          <Badge variant="brand">{category.label}</Badge>
+        <div className="mb-5 flex items-center gap-3">
+          <EventThumbnail
+            category={event.category}
+            coverImageUrl={event.cover_image_url}
+            alt=""
+            className="aspect-square w-16 shrink-0 rounded-lg"
+            sizes="64px"
+          />
+          <div className="min-w-0">
+            <div className="mb-1">
+              <Badge variant="brand">{category.label}</Badge>
+            </div>
+            <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">{event.title}</h1>
+          </div>
         </div>
-        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-foreground">{event.title}</h1>
         <div className="mb-6 flex flex-col gap-1 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <CalendarDays className="size-4" />

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, MapPin, ShieldAlert, ExternalLink, Ticket as TicketIcon } from "lucide-react";
 
 import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,71 +59,69 @@ export default async function EventPage({ params }: EventPageProps) {
         <NavbarInner>
           <Link href="/" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
             <NavbarBrand>
-              <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <CalendarDays className="size-4" />
-              </span>
+              <BrandMark />
               TTG
             </NavbarBrand>
           </Link>
         </NavbarInner>
       </Navbar>
 
-      <EventThumbnail
-        category={event.category}
-        coverImageUrl={event.coverImageUrl}
-        alt=""
-        className="aspect-[21/9] w-full sm:aspect-[3/1]"
-        iconClassName="size-10"
-        sizes="100vw"
-        priority
-      />
+      <div className="relative">
+        <EventThumbnail
+          category={event.category}
+          coverImageUrl={event.coverImageUrl}
+          alt=""
+          className="aspect-[4/3] w-full sm:aspect-[16/9] lg:aspect-[21/9]"
+          iconClassName="size-10"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
 
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <Link
           href="/"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-black/55 sm:left-6"
         >
           <ArrowLeft className="size-4" />
-          Volver a eventos
+          Volver
         </Link>
 
+        <div className="absolute inset-x-0 bottom-0 px-4 pb-5 sm:px-6 sm:pb-7">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="brand">{category.label}</Badge>
+              {event.isPast ? (
+                <Badge variant="neutral">Finalizado</Badge>
+              ) : allSoldOut ? (
+                <Badge variant="warning">Agotado</Badge>
+              ) : null}
+              {event.minAge && (
+                <Badge variant="outline" className="border-white/40 bg-black/20 text-white">
+                  <ShieldAlert className="size-3.5" /> {ageRestrictionLabel(event.minAge)}
+                </Badge>
+              )}
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl lg:text-4xl">
+              {event.title}
+            </h1>
+            <div className="flex flex-col gap-1 text-sm text-white/85 sm:flex-row sm:items-center sm:gap-4">
+              <span className="flex items-center gap-1.5">
+                <CalendarDays className="size-4 shrink-0" />
+                {formatDateInTimeZone(event.startsAt, event.timezone)} ·{" "}
+                {formatTimeInTimeZone(event.startsAt, event.timezone)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <MapPin className="size-4 shrink-0" />
+                {event.venueName} · {event.city}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="flex flex-col gap-8 lg:col-span-2">
-            <div>
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <Badge variant="brand">{category.label}</Badge>
-                {event.isPast ? (
-                  <Badge variant="neutral">Finalizado</Badge>
-                ) : allSoldOut ? (
-                  <Badge variant="warning">Agotado</Badge>
-                ) : null}
-                {event.minAge && (
-                  <Badge variant="outline">
-                    <ShieldAlert className="size-3.5" /> {ageRestrictionLabel(event.minAge)}
-                  </Badge>
-                )}
-              </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                {event.title}
-              </h1>
-
-              <div className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="size-4 shrink-0" />
-                  <span>
-                    {formatDateInTimeZone(event.startsAt, event.timezone)} ·{" "}
-                    {formatTimeInTimeZone(event.startsAt, event.timezone)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="size-4 shrink-0" />
-                  <span>
-                    {event.venueName} — {event.address}, {event.city}
-                  </span>
-                </div>
-              </div>
-            </div>
-
             <section>
               <h2 className="mb-2 text-base font-semibold text-foreground">Acerca del evento</h2>
               <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{event.description}</p>
