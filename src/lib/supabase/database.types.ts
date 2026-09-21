@@ -450,6 +450,7 @@ export type Database = {
           currency: string
           gross_amount: number
           id: string
+          initiated_by: string | null
           order_id: string
           organizer_amount: number
           platform_fee_amount: number
@@ -464,6 +465,7 @@ export type Database = {
           currency?: string
           gross_amount: number
           id?: string
+          initiated_by?: string | null
           order_id: string
           organizer_amount: number
           platform_fee_amount: number
@@ -478,6 +480,7 @@ export type Database = {
           currency?: string
           gross_amount?: number
           id?: string
+          initiated_by?: string | null
           order_id?: string
           organizer_amount?: number
           platform_fee_amount?: number
@@ -488,6 +491,13 @@ export type Database = {
           type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payment_transactions_initiated_by_fkey"
+            columns: ["initiated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payment_transactions_order_id_fkey"
             columns: ["order_id"]
@@ -913,6 +923,7 @@ export type Database = {
       apply_ticket_refund: {
         Args: {
           p_amount: number
+          p_initiated_by?: string
           p_platform_fee_refunded: number
           p_stripe_refund_id: string
           p_ticket_id: string

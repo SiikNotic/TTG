@@ -11,6 +11,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   TICKET_NOT_FOUND: "Ticket no encontrado.",
   NOT_AUTHORIZED: "No tienes permiso sobre este ticket.",
   TICKET_NOT_ACTIVE: "Este ticket ya no está activo.",
+  TICKET_NOT_REFUNDABLE: "Este ticket no es elegible para reembolso.",
   ORDER_NOT_PAID: "Esta orden no tiene un pago confirmado para reembolsar.",
   INVALID_TARGET_STATUS: "Acción inválida.",
   INVALID_TOKEN: "Código inválido.",
@@ -45,12 +46,21 @@ async function setTicketStatus(ticketId: string, status: "cancelled"): Promise<A
  * transferencia al organizador), nunca un flip directo de estado en la
  * base de datos. El estado del ticket lo actualiza apply_ticket_refund
  * recién después de que Stripe confirma el reembolso.
+ *
+ * Elegible tanto un ticket 'active' como uno 'cancelled' (por ejemplo, un
+ * ticket pagado cuyo evento se canceló: cascade_event_cancellation lo pasa
+ * a 'cancelled', pero el dinero sigue cobrado hasta que esto se ejecuta).
  */
 export async function refundTicket(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const ticketId = String(formData.get("ticketId") ?? "");
   if (!ticketId) return { error: "Ticket inválido." };
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Debes iniciar sesión." };
+
   const { data, error } = await supabase.rpc("get_refundable_ticket", { p_ticket_id: ticketId });
   const info = data?.[0];
   if (error || !info) return { error: translateTicketError(error?.message) };
@@ -90,6 +100,7 @@ export async function refundTicket(_prev: ActionState, formData: FormData): Prom
       p_stripe_refund_id: refund.id,
       p_amount: amount,
       p_platform_fee_refunded: platformFeeRefunded,
+      p_initiated_by: user.id,
     });
     if (applyError) {
       return { error: "El reembolso se procesó en Stripe pero no se pudo actualizar la base de datos." };

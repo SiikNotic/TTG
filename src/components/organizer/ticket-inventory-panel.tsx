@@ -31,7 +31,13 @@ function TicketRowActions({ ticket }: { ticket: TicketRow }) {
   const [cancelState, cancelAction] = useActionState(cancelTicket, INITIAL_ACTION_STATE);
   const [mode, setMode] = useState<"idle" | "refund" | "cancel">("idle");
 
-  if (ticket.status !== "active") return null;
+  // Un ticket 'cancelled' (p.ej. por cancelar el evento) ya no se puede
+  // "cancelar" de nuevo, pero sigue siendo reembolsable si el cobro real
+  // nunca se revirtió: sin esto, un ticket cobrado y cancelado quedaba sin
+  // ninguna acción disponible para devolver el dinero.
+  const canRefund = ticket.status === "active" || ticket.status === "cancelled";
+  const canCancel = ticket.status === "active";
+  if (!canRefund && !canCancel) return null;
 
   if (mode === "refund") {
     return (
@@ -67,12 +73,16 @@ function TicketRowActions({ ticket }: { ticket: TicketRow }) {
 
   return (
     <div className="flex items-center gap-1">
-      <Button type="button" size="sm" variant="outline" onClick={() => setMode("refund")}>
-        Reembolsar
-      </Button>
-      <Button type="button" size="sm" variant="ghost" onClick={() => setMode("cancel")}>
-        Cancelar
-      </Button>
+      {canRefund && (
+        <Button type="button" size="sm" variant="outline" onClick={() => setMode("refund")}>
+          Reembolsar
+        </Button>
+      )}
+      {canCancel && (
+        <Button type="button" size="sm" variant="ghost" onClick={() => setMode("cancel")}>
+          Cancelar
+        </Button>
+      )}
     </div>
   );
 }
