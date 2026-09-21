@@ -4,7 +4,9 @@ import { ArrowLeft, CalendarDays } from "lucide-react";
 import { Navbar, NavbarInner, NavbarBrand } from "@/components/ui/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/state-message";
-import { getOrganizerEvents, getEventForOrganizer } from "@/lib/organizer";
+import { getEventForOrganizer } from "@/lib/organizer";
+import { getScannableEvents } from "@/lib/staff";
+import { getCurrentUser } from "@/lib/auth";
 import { formatInTimeZone } from "@/lib/timezone";
 import { Scanner } from "./scanner";
 
@@ -16,6 +18,10 @@ interface ValidatePageProps {
 
 export default async function ValidateTicketPage({ searchParams }: ValidatePageProps) {
   const { eventId } = await searchParams;
+  const currentUser = await getCurrentUser();
+  // Un staff invitado (role='asistente', por ejemplo) no tiene acceso al
+  // resto de /organizador: volver ahí le daría "no autorizado".
+  const backHref = currentUser?.role === "organizador" || currentUser?.role === "admin" ? "/organizador" : "/";
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,11 +35,11 @@ export default async function ValidateTicketPage({ searchParams }: ValidatePageP
 
       <main className="mx-auto max-w-md px-4 py-8 sm:px-6">
         <Link
-          href="/organizador"
+          href={backHref}
           className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Volver al panel
+          Volver
         </Link>
 
         {eventId ? <EventScanner eventId={eventId} /> : <EventPicker />}
@@ -61,7 +67,7 @@ async function EventScanner({ eventId }: { eventId: string }) {
 }
 
 async function EventPicker() {
-  const events = (await getOrganizerEvents()).filter((e) => e.status !== "borrador");
+  const events = await getScannableEvents();
 
   return (
     <>

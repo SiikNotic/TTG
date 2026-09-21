@@ -5,13 +5,22 @@ import type { Database } from "@/lib/supabase/database.types";
 type UserRole = Database["public"]["Enums"]["user_role"];
 
 /** Rutas que requieren sesión, sin importar el rol. */
-const PROTECTED_PREFIXES = ["/cuenta", "/comprar", "/ordenes", "/tickets", "/mis-tickets"];
+const PROTECTED_PREFIXES = ["/cuenta", "/comprar", "/ordenes", "/tickets", "/mis-tickets", "/invitaciones"];
 
 /** Rutas que requieren sesión + un rol específico. */
 const ROLE_PREFIXES: { prefix: string; roles: UserRole[] }[] = [
   { prefix: "/organizador", roles: ["organizador", "admin"] },
   { prefix: "/admin", roles: ["admin"] },
 ];
+
+/**
+ * Dentro de /organizador (gateado a organizador/admin), el escáner acepta
+ * además a cualquier usuario autenticado con una invitación de staff
+ * aceptada: la autorización fina (qué evento puede escanear) la hace la
+ * página/RPC, no el middleware. Sin esto, un staff con role='asistente'
+ * nunca podría entrar a /organizador/validar.
+ */
+const STAFF_OVERRIDE_PREFIXES = ["/organizador/validar"];
 
 /** Rutas de auth que no tienen sentido si ya hay sesión activa. */
 const AUTH_ONLY_PREFIXES = ["/iniciar-sesion", "/registro"];
@@ -57,6 +66,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isProtected = matchesPrefix(pathname, PROTECTED_PREFIXES);
   const roleGate = ROLE_PREFIXES.find((r) => matchesPrefix(pathname, [r.prefix]));
+  const isStaffOverride = matchesPrefix(pathname, STAFF_OVERRIDE_PREFIXES);
   const isAuthOnly = matchesPrefix(pathname, AUTH_ONLY_PREFIXES);
 
   if ((isProtected || roleGate) && !user) {
@@ -68,7 +78,7 @@ export async function updateSession(request: NextRequest) {
     return redirect;
   }
 
-  if (roleGate && user) {
+  if (roleGate && user && !isStaffOverride) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")

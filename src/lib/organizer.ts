@@ -56,7 +56,17 @@ export async function getEventForOrganizer(
 
   if (event.organizer_id !== user.id) {
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-    if (profile?.role !== "admin") return null;
+    if (profile?.role !== "admin") {
+      const { data: grant } = await supabase
+        .from("event_staff")
+        .select("id")
+        .eq("staff_user_id", user.id)
+        .eq("organizer_id", event.organizer_id)
+        .eq("status", "aceptada")
+        .or(`event_id.eq.${eventId},event_id.is.null`)
+        .maybeSingle();
+      if (!grant) return null;
+    }
   }
 
   const { data: ticketTypes } = await supabase
