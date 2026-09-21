@@ -178,6 +178,31 @@ export async function getTicketsForOrganizer(ticketTypeId: string): Promise<Tick
   return data ?? [];
 }
 
+/**
+ * Tickets de un evento con un reembolso ya confirmado por Stripe pero
+ * todavía sin sincronizar en TTG (stripe_refund_reconciliation en
+ * 'pending'). RLS (stripe_refund_reconciliation_select_organizer_or_admin)
+ * ya limita esto al organizador dueño del evento o a un admin.
+ */
+export async function getPendingRefundSyncMap(ticketIds: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  if (ticketIds.length === 0) return map;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("stripe_refund_reconciliation")
+    .select("stripe_refund_id, ticket_ids")
+    .eq("status", "pending")
+    .overlaps("ticket_ids", ticketIds);
+
+  for (const row of data ?? []) {
+    for (const ticketId of row.ticket_ids ?? []) {
+      if (ticketIds.includes(ticketId)) map.set(ticketId, row.stripe_refund_id);
+    }
+  }
+  return map;
+}
+
 export async function getMyTickets() {
   const supabase = await createClient();
   const {

@@ -603,6 +603,69 @@ export type Database = {
           },
         ]
       }
+      stripe_refund_reconciliation: {
+        Row: {
+          amount: number
+          applied_at: string | null
+          created_at: string
+          id: string
+          initiated_by: string | null
+          notes: string | null
+          order_id: string | null
+          platform_fee_refunded: number
+          source: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_refund_id: string
+          ticket_ids: string[] | null
+        }
+        Insert: {
+          amount: number
+          applied_at?: string | null
+          created_at?: string
+          id?: string
+          initiated_by?: string | null
+          notes?: string | null
+          order_id?: string | null
+          platform_fee_refunded?: number
+          source: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_refund_id: string
+          ticket_ids?: string[] | null
+        }
+        Update: {
+          amount?: number
+          applied_at?: string | null
+          created_at?: string
+          id?: string
+          initiated_by?: string | null
+          notes?: string | null
+          order_id?: string | null
+          platform_fee_refunded?: number
+          source?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_refund_id?: string
+          ticket_ids?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_refund_reconciliation_initiated_by_fkey"
+            columns: ["initiated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stripe_refund_reconciliation_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stripe_webhook_events: {
         Row: {
           created_at: string
@@ -933,6 +996,24 @@ export type Database = {
           used_at: string | null
         }[]
       }
+      apply_stripe_refund_reconciliation: {
+        Args: { p_stripe_refund_id: string }
+        Returns: {
+          amount: number
+          applied_at: string | null
+          created_at: string
+          id: string
+          initiated_by: string | null
+          notes: string | null
+          order_id: string | null
+          platform_fee_refunded: number
+          source: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_refund_id: string
+          ticket_ids: string[] | null
+        }
+      }
       apply_ticket_refund: {
         Args: {
           p_amount: number
@@ -1060,6 +1141,33 @@ export type Database = {
           ticket_type_id: string
           unit_price: number
           updated_at: string
+        }
+      }
+      record_stripe_refund: {
+        Args: {
+          p_amount?: number
+          p_initiated_by?: string
+          p_order_id?: string
+          p_platform_fee_refunded?: number
+          p_source?: string
+          p_stripe_payment_intent_id?: string
+          p_stripe_refund_id: string
+          p_ticket_ids?: string[]
+        }
+        Returns: {
+          amount: number
+          applied_at: string | null
+          created_at: string
+          id: string
+          initiated_by: string | null
+          notes: string | null
+          order_id: string | null
+          platform_fee_refunded: number
+          source: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_refund_id: string
+          ticket_ids: string[] | null
         }
       }
       reserve_tickets: {

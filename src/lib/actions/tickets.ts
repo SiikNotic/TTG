@@ -16,6 +16,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   INVALID_TARGET_STATUS: "Acción inválida.",
   INVALID_TOKEN: "Código inválido.",
   NO_TOKEN: "Este ticket no tiene un código para mostrar.",
+  RECONCILIATION_NOT_FOUND: "No se encontró el registro de ese reembolso.",
 };
 
 function translateTicketError(message: string | undefined): string {
@@ -44,12 +45,20 @@ async function setTicketStatus(ticketId: string, status: "cancelled"): Promise<A
  * Reembolso real: SIEMPRE pasa por la API de Stripe (reverse_transfer +
  * refund_application_fee, para deshacer también la comisión y la
  * transferencia al organizador), nunca un flip directo de estado en la
- * base de datos. El estado del ticket lo actualiza apply_ticket_refund
- * recién después de que Stripe confirma el reembolso.
+ * base de datos.
  *
  * Elegible tanto un ticket 'active' como uno 'cancelled' (por ejemplo, un
  * ticket pagado cuyo evento se canceló: cascade_event_cancellation lo pasa
  * a 'cancelled', pero el dinero sigue cobrado hasta que esto se ejecuta).
+ *
+ * En cuanto Stripe confirma el refund, se registra de inmediato en
+ * stripe_refund_reconciliation (record_stripe_refund) ANTES de intentar
+ * aplicarlo al ticket: así, si el siguiente paso falla por lo que sea (red,
+ * timeout, deploy a mitad de camino), el hecho de que Stripe ya devolvió el
+ * dinero queda guardado de forma durable y reconciliable — nunca depende
+ * únicamente de que este request termine con éxito. apply_ticket_refund
+ * (a través de apply_stripe_refund_reconciliation) es quien de verdad
+ * cambia el estado del ticket, y sigue siendo lo único que lo hace.
  */
 export async function refundTicket(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const ticketId = String(formData.get("ticketId") ?? "");
@@ -89,27 +98,86 @@ export async function refundTicket(_prev: ActionState, formData: FormData): Prom
     return { error: err instanceof Error ? err.message : "No se pudo procesar el reembolso en Stripe." };
   }
 
-  // 'succeeded' síncrono (lo normal para tarjetas): se confirma ya mismo.
-  // Cualquier otro estado ('pending', típico de métodos async) lo termina
-  // de confirmar el webhook charge.refunded — nunca se marca reembolsado
-  // solo porque Stripe aceptó la solicitud.
-  if (refund.status === "succeeded") {
-    const admin = createServiceRoleClient();
-    const { error: applyError } = await admin.rpc("apply_ticket_refund", {
-      p_ticket_id: ticketId,
-      p_stripe_refund_id: refund.id,
-      p_amount: amount,
-      p_platform_fee_refunded: platformFeeRefunded,
-      p_initiated_by: user.id,
-    });
-    if (applyError) {
-      return { error: "El reembolso se procesó en Stripe pero no se pudo actualizar la base de datos." };
-    }
-    revalidatePath(`/tickets/${ticketId}`);
-    return { success: "Ticket reembolsado. El cupo vuelve a estar disponible." };
+  // 'pending' (típico de métodos async): todavía no hay nada confirmado de
+  // parte de Stripe. El webhook charge.refunded se encarga de registrar y
+  // aplicar el reembolso cuando Stripe lo confirme — mismo mecanismo que
+  // se usa más abajo, no uno distinto.
+  if (refund.status !== "succeeded") {
+    return { success: "Reembolso solicitado a Stripe. Se confirmará en breve." };
   }
 
-  return { success: "Reembolso solicitado a Stripe. Se confirmará en breve." };
+  // A partir de acá el dinero YA se devolvió de verdad en Stripe.
+  const admin = createServiceRoleClient();
+  const { error: recordError } = await admin.rpc("record_stripe_refund", {
+    p_stripe_refund_id: refund.id,
+    p_stripe_payment_intent_id: info.stripe_payment_intent_id,
+    p_order_id: info.order_id,
+    p_ticket_ids: [ticketId],
+    p_amount: amount,
+    p_platform_fee_refunded: platformFeeRefunded,
+    p_initiated_by: user.id,
+    p_source: "app",
+  });
+  if (recordError) {
+    // No se pudo ni registrar en TTG. El webhook charge.refunded va a
+    // llegar de todas formas y va a encontrar la metadata ticket_id que
+    // Stripe sí guardó, así que lo recupera por esa vía sin intervención.
+    return {
+      success:
+        "El reembolso se procesó en Stripe. Puede tardar unos segundos en reflejarse en TTG; si no se actualiza, recarga esta página.",
+    };
+  }
+
+  const { error: applyError } = await admin.rpc("apply_stripe_refund_reconciliation", {
+    p_stripe_refund_id: refund.id,
+  });
+  if (applyError) {
+    // El registro del paso anterior ya quedó guardado y es reconciliable:
+    // el webhook lo terminará de aplicar cuando llegue, o el organizador
+    // puede reintentar manualmente desde "Reintentar sincronización".
+    return {
+      success:
+        'El reembolso se procesó en Stripe y quedó registrado. Está sincronizando el estado del ticket; si en unos segundos no se actualiza, usa "Reintentar sincronización" en el panel del evento.',
+    };
+  }
+
+  revalidatePath(`/tickets/${ticketId}`);
+  return { success: "Ticket reembolsado. El cupo vuelve a estar disponible." };
+}
+
+/**
+ * Reintento manual de sincronización: para el caso (raro) en que el propio
+ * request de refundTicket() se cayó después de que record_stripe_refund ya
+ * dejó el reembolso registrado, pero antes/mientras apply_stripe_refund_
+ * reconciliation lo aplicaba. No crea ningún refund nuevo en Stripe — solo
+ * reintenta aplicar uno que ya está confirmado y guardado.
+ */
+export async function retryRefundReconciliation(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const stripeRefundId = String(formData.get("stripeRefundId") ?? "");
+  if (!stripeRefundId) return { error: "Referencia inválida." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Debes iniciar sesión." };
+
+  // La policy stripe_refund_reconciliation_select_organizer_or_admin es lo
+  // que realmente autoriza esto: si la fila no pertenece a un evento del
+  // organizador (o no es admin), esta lectura simplemente no la encuentra.
+  const { data: row } = await supabase
+    .from("stripe_refund_reconciliation")
+    .select("stripe_refund_id")
+    .eq("stripe_refund_id", stripeRefundId)
+    .maybeSingle();
+  if (!row) return { error: "No tienes permiso o el registro no existe." };
+
+  const admin = createServiceRoleClient();
+  const { error } = await admin.rpc("apply_stripe_refund_reconciliation", { p_stripe_refund_id: stripeRefundId });
+  if (error) return { error: translateTicketError(error.message) };
+
+  revalidatePath("/organizador");
+  return { success: "Sincronizado correctamente." };
 }
 
 export async function cancelTicket(_prev: ActionState, formData: FormData): Promise<ActionState> {

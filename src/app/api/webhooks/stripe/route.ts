@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
-import { computePlatformFee } from "@/lib/payments/fees";
+import { computePlatformFee, toStripeAmount } from "@/lib/payments/fees";
 
 export const runtime = "nodejs";
 
@@ -127,17 +127,88 @@ async function handleEvent(event: Stripe.Event, supabase: ReturnType<typeof crea
     case "charge.refunded": {
       const charge = event.data.object as Stripe.Charge;
       const refunds = charge.refunds?.data ?? [];
+      const chargePaymentIntentId =
+        typeof charge.payment_intent === "string" ? charge.payment_intent : (charge.payment_intent?.id ?? null);
+
       for (const refund of refunds) {
         if (refund.status !== "succeeded") continue;
-        const ticketId = refund.metadata?.ticket_id;
-        if (!ticketId) continue;
-        const { error } = await supabase.rpc("apply_ticket_refund", {
-          p_ticket_id: ticketId,
+
+        // A2: no depender únicamente de refund.metadata.ticket_id (solo la
+        // pone refundTicket() — un refund creado directo en el Dashboard de
+        // Stripe, o por cualquier otra vía, nunca la trae). Se intenta
+        // resolver el/los ticket(s) de forma inequívoca; si no se puede,
+        // record_stripe_refund lo deja registrado como 'ambiguous' y NO se
+        // toca ningún ticket al azar.
+        let ticketIds: string[] | null = null;
+        let orderId: string | null = null;
+
+        const metadataTicketId = refund.metadata?.ticket_id ?? null;
+        if (metadataTicketId) {
+          const { data: ticketRow } = await supabase
+            .from("tickets")
+            .select("order_id")
+            .eq("id", metadataTicketId)
+            .maybeSingle();
+          // Solo se confía en la metadata si de verdad resuelve a un ticket
+          // real; si no, se cae al camino de resolución por payment_intent
+          // en vez de guardar un ticket_id que no existe.
+          if (ticketRow) {
+            ticketIds = [metadataTicketId];
+            orderId = ticketRow.order_id;
+          }
+        }
+
+        if (!ticketIds && chargePaymentIntentId) {
+          const { data: order } = await supabase
+            .from("orders")
+            .select("id, unit_price")
+            .eq("stripe_payment_intent_id", chargePaymentIntentId)
+            .maybeSingle();
+
+          if (order) {
+            orderId = order.id;
+            const { data: refundableTickets } = await supabase
+              .from("tickets")
+              .select("id")
+              .eq("order_id", order.id)
+              .in("status", ["active", "cancelled"]);
+            const candidates = refundableTickets ?? [];
+            const perTicketAmount = toStripeAmount(order.unit_price);
+
+            if (candidates.length === 1) {
+              // Único ticket de la orden que todavía puede reembolsarse:
+              // inequívoco sin importar el monto exacto del refund.
+              ticketIds = [candidates[0]!.id];
+            } else if (
+              candidates.length > 1 &&
+              perTicketAmount > 0 &&
+              refund.amount === perTicketAmount * candidates.length
+            ) {
+              // El monto cubre exactamente TODOS los tickets restantes de
+              // la orden: también inequívoco (reembolso del saldo completo).
+              ticketIds = candidates.map((t) => t.id);
+            }
+            // Cualquier otro caso (0 candidatos, o un monto parcial que no
+            // identifica cuáles tickets específicos): queda ambiguo a
+            // propósito, no se adivina.
+          }
+        }
+
+        const { error: recordError } = await supabase.rpc("record_stripe_refund", {
           p_stripe_refund_id: refund.id,
+          p_stripe_payment_intent_id: chargePaymentIntentId ?? undefined,
+          p_order_id: orderId ?? undefined,
+          p_ticket_ids: ticketIds ?? undefined,
           p_amount: refund.amount,
           p_platform_fee_refunded: 0,
+          p_source: "webhook",
         });
-        if (error) throw new Error(`apply_ticket_refund: ${error.message}`);
+        if (recordError) throw new Error(`record_stripe_refund: ${recordError.message}`);
+
+        const { error: applyError } = await supabase.rpc("apply_stripe_refund_reconciliation", {
+          p_stripe_refund_id: refund.id,
+        });
+        if (applyError) throw new Error(`apply_stripe_refund_reconciliation: ${applyError.message}`);
       }
       return;
     }

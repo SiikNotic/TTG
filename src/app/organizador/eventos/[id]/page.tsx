@@ -14,7 +14,7 @@ import { TicketInventoryPanel } from "@/components/organizer/ticket-inventory-pa
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { getCategoryMeta } from "@/lib/categories";
 import { getEventForOrganizer } from "@/lib/organizer";
-import { getEventTicketTypesWithInventory, getTicketsForOrganizer } from "@/lib/tickets";
+import { getEventTicketTypesWithInventory, getTicketsForOrganizer, getPendingRefundSyncMap } from "@/lib/tickets";
 import { updateEvent } from "@/lib/actions/events";
 import { utcToZonedParts } from "@/lib/timezone";
 import { parseRules } from "@/lib/event-rules";
@@ -39,6 +39,9 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
   const ticketsByType = await Promise.all(
     ticketTypes.map((tt) => getTicketsForOrganizer(tt.id))
   );
+  const allTicketIds = ticketsByType.flat().map((t) => t.id);
+  const pendingSyncMap = await getPendingRefundSyncMap(allTicketIds);
+  const pendingSync = Object.fromEntries(pendingSyncMap);
 
   const ageOption: EventFormDefaults["ageOption"] =
     event.min_age === null ? "todas" : event.min_age === 18 ? "18" : event.min_age === 21 ? "21" : "custom";
@@ -121,7 +124,7 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
               return (
                 <div key={tt.id} className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground">{tt.name}</p>
-                  <TicketInventoryPanel inventory={inventory} tickets={ticketsByType[i] ?? []} />
+                  <TicketInventoryPanel inventory={inventory} tickets={ticketsByType[i] ?? []} pendingSync={pendingSync} />
                 </div>
               );
             })}

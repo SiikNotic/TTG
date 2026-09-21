@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { refundTicket, cancelTicket } from "@/lib/actions/tickets";
+import { AlertTriangle } from "lucide-react";
+import { refundTicket, cancelTicket, retryRefundReconciliation } from "@/lib/actions/tickets";
 import { INITIAL_ACTION_STATE } from "@/lib/actions/action-state";
 import type { TicketInventory, TicketRow } from "@/lib/tickets";
 import { Badge } from "@/components/ui/badge";
@@ -87,7 +88,30 @@ function TicketRowActions({ ticket }: { ticket: TicketRow }) {
   );
 }
 
-function TicketInventoryPanel({ inventory, tickets }: { inventory: TicketInventory; tickets: TicketRow[] }) {
+function PendingSyncNotice({ stripeRefundId }: { stripeRefundId: string }) {
+  const [state, formAction] = useActionState(retryRefundReconciliation, INITIAL_ACTION_STATE);
+  return (
+    <form action={formAction} className="flex flex-wrap items-center gap-2 rounded-md bg-warning-500/10 px-2 py-1.5">
+      <input type="hidden" name="stripeRefundId" value={stripeRefundId} />
+      <AlertTriangle className="size-3.5 shrink-0 text-warning-600" />
+      <span className="text-xs text-warning-600">Reembolso confirmado en Stripe, sincronizando…</span>
+      <SubmitButton size="sm" variant="outline" className="w-fit">
+        Reintentar sincronización
+      </SubmitButton>
+      {state.error && <span className="text-xs text-destructive">{state.error}</span>}
+    </form>
+  );
+}
+
+function TicketInventoryPanel({
+  inventory,
+  tickets,
+  pendingSync,
+}: {
+  inventory: TicketInventory;
+  tickets: TicketRow[];
+  pendingSync?: Record<string, string>;
+}) {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -104,16 +128,17 @@ function TicketInventoryPanel({ inventory, tickets }: { inventory: TicketInvento
         <div className="flex flex-col gap-1.5">
           {tickets.map((ticket) => {
             const status = STATUS_LABEL[ticket.status] ?? STATUS_LABEL.active!;
+            const pendingStripeRefundId = pendingSync?.[ticket.id];
             return (
-              <div
-                key={ticket.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
-              >
-                <div className="flex items-center gap-2">
-                  <Badge variant={status.variant}>{status.label}</Badge>
-                  <span className="font-mono text-xs text-muted-foreground">{ticket.serial}</span>
+              <div key={ticket.id} className="flex flex-col gap-1.5 rounded-md border border-border px-3 py-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                    <span className="font-mono text-xs text-muted-foreground">{ticket.serial}</span>
+                  </div>
+                  <TicketRowActions ticket={ticket} />
                 </div>
-                <TicketRowActions ticket={ticket} />
+                {pendingStripeRefundId && <PendingSyncNotice stripeRefundId={pendingStripeRefundId} />}
               </div>
             );
           })}
