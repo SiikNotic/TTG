@@ -11,9 +11,10 @@ import { EventCoverForm } from "@/components/organizer/event-cover-form";
 import { EventForm, type EventFormDefaults } from "@/components/organizer/event-form";
 import { TicketTypeManager } from "@/components/organizer/ticket-type-manager";
 import { TicketInventoryPanel } from "@/components/organizer/ticket-inventory-panel";
+import { ScanHistoryPanel } from "@/components/organizer/scan-history-panel";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { getCategoryMeta } from "@/lib/categories";
-import { getEventForOrganizer } from "@/lib/organizer";
+import { getEventForOrganizer, getScanHistoryForEvent } from "@/lib/organizer";
 import { getEventTicketTypesWithInventory, getTicketsForOrganizer, getPendingRefundSyncMap } from "@/lib/tickets";
 import { updateEvent } from "@/lib/actions/events";
 import { utcToZonedParts } from "@/lib/timezone";
@@ -42,6 +43,7 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
   const allTicketIds = ticketsByType.flat().map((t) => t.id);
   const pendingSyncMap = await getPendingRefundSyncMap(allTicketIds);
   const pendingSync = Object.fromEntries(pendingSyncMap);
+  const scanHistory = await getScanHistoryForEvent(event.id);
 
   const ageOption: EventFormDefaults["ageOption"] =
     event.min_age === null ? "todas" : event.min_age === 18 ? "18" : event.min_age === 21 ? "21" : "custom";
@@ -130,6 +132,11 @@ export default async function EventManagePage({ params }: EventManagePageProps) 
             })}
           </div>
         )}
+
+        <div className="mb-8">
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Historial de escaneos</h2>
+          <ScanHistoryPanel entries={scanHistory.entries} hasMore={scanHistory.hasMore} timezone={event.timezone} />
+        </div>
 
         <div>
           <h2 className="mb-3 text-sm font-semibold text-foreground">Detalles del evento</h2>
