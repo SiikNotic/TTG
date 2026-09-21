@@ -71,7 +71,14 @@ export async function getEventTicketTypesWithInventory(eventId: string) {
   return results;
 }
 
-/** Tipo de entrada + evento, para la página de checkout (solo si el evento está publicado). */
+/**
+ * Tipo de entrada + evento, para la página de checkout (solo si el evento
+ * está publicado y todavía no terminó). Mismo criterio de cierre que
+ * scan_ticket/getPublicEventBySlug: coalesce(ends_at, starts_at) < now().
+ * Entrar directo a /comprar/[ticketTypeId] de un evento ya terminado debe
+ * fallar igual que uno pausado/cancelado (notFound), no solo ocultar el
+ * botón de comprar en la página pública.
+ */
 export async function getTicketTypeForPurchase(ticketTypeId: string) {
   const supabase = await createClient();
   const { data } = await supabase
@@ -82,6 +89,8 @@ export async function getTicketTypeForPurchase(ticketTypeId: string) {
   if (!data) return null;
   const { events: event, ...ticketType } = data as TicketTypeRow & { events: EventRow };
   if (!event || event.status !== "publicado") return null;
+  const saleCutoff = new Date(event.ends_at ?? event.starts_at).getTime();
+  if (saleCutoff < Date.now()) return null;
   return { ticketType, event };
 }
 

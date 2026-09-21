@@ -11,6 +11,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   INVALID_QUANTITY: "Cantidad inválida.",
   TICKET_TYPE_NOT_FOUND: "Tipo de entrada no encontrado.",
   EVENT_NOT_ON_SALE: "Este evento no está a la venta en este momento.",
+  EVENT_ENDED: "Este evento ya terminó. Ya no se pueden comprar entradas.",
   EXCEEDS_MAX_PER_BUYER: "Superas el máximo de entradas permitido por comprador para este tipo de entrada.",
   INSUFFICIENT_INVENTORY: "No hay suficientes entradas disponibles. Otra persona pudo haberlas tomado justo ahora.",
   ORDER_NOT_FOUND: "Orden no encontrada.",
