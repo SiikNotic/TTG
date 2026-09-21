@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, CalendarDays } from "lucide-react";
+import { Plus, CalendarDays, Wallet, Store, CreditCard, UserCircle2 } from "lucide-react";
 import { Navbar, NavbarInner, NavbarBrand, NavbarActions, NavbarMobileMenu } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -50,17 +50,25 @@ export default async function OrganizerDashboardPage() {
               </Link>
             </Button>
             <NavbarMobileMenu>
-              <Button asChild size="sm" variant="ghost" className="w-full justify-start">
-                <Link href="/organizador/finanzas">Finanzas</Link>
+              <Button asChild size="md" variant="ghost" className="w-full justify-start">
+                <Link href="/organizador/finanzas">
+                  <Wallet /> Finanzas
+                </Link>
               </Button>
-              <Button asChild size="sm" variant="ghost" className="w-full justify-start">
-                <Link href="/organizador/recurrentes">Negocios recurrentes</Link>
+              <Button asChild size="md" variant="ghost" className="w-full justify-start">
+                <Link href="/organizador/recurrentes">
+                  <Store /> Negocios recurrentes
+                </Link>
               </Button>
-              <Button asChild size="sm" variant="ghost" className="w-full justify-start">
-                <Link href="/organizador/pagos">Pagos</Link>
+              <Button asChild size="md" variant="ghost" className="w-full justify-start">
+                <Link href="/organizador/pagos">
+                  <CreditCard /> Pagos
+                </Link>
               </Button>
-              <Button asChild size="sm" variant="ghost" className="w-full justify-start">
-                <Link href="/organizador/perfil">Perfil</Link>
+              <Button asChild size="md" variant="ghost" className="w-full justify-start">
+                <Link href="/organizador/perfil">
+                  <UserCircle2 /> Perfil
+                </Link>
               </Button>
             </NavbarMobileMenu>
           </NavbarActions>

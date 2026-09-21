@@ -92,34 +92,38 @@ function NavbarMobileMenu({ children, triggerLabel = "Abrir menú" }: NavbarMobi
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           className={cn(
-            "fixed inset-0 z-50 bg-neutral-950/50 md:hidden",
+            "fixed inset-0 z-50 bg-neutral-950/55 backdrop-blur-[2px] md:hidden",
             "data-[state=open]:animate-in data-[state=open]:fade-in-0",
-            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+            "duration-base ease-standard"
           )}
         />
         <DialogPrimitive.Content
           className={cn(
-            "fixed inset-y-0 right-0 z-50 flex w-[85%] max-w-sm flex-col gap-1 bg-surface-elevated p-4 shadow-xl md:hidden",
-            "data-[state=open]:animate-in data-[state=open]:slide-in-from-right",
-            "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right",
-            "duration-base ease-standard"
+            "fixed inset-x-0 bottom-0 z-50 flex max-h-[80vh] flex-col gap-1 rounded-t-2xl bg-surface-elevated p-4 shadow-xl md:hidden",
+            "pb-[max(1rem,env(safe-area-inset-bottom))]",
+            "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom data-[state=open]:fade-in-0",
+            "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=closed]:fade-out-0",
+            "duration-slow ease-emphasized"
           )}
         >
+          <div className="mx-auto mb-1 h-1 w-9 shrink-0 rounded-full bg-border" aria-hidden="true" />
           <div className="mb-2 flex items-center justify-between">
             <DialogPrimitive.Title className="text-sm font-medium text-muted-foreground">
               Menú
             </DialogPrimitive.Title>
             <DialogPrimitive.Close
               className={cn(
-                "inline-flex size-9 items-center justify-center rounded-md text-foreground",
-                "hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                "inline-flex size-9 items-center justify-center rounded-full text-foreground",
+                "transition-colors duration-fast hover:bg-surface-hover",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               )}
               aria-label="Cerrar menú"
             >
               <X className="size-5" />
             </DialogPrimitive.Close>
           </div>
-          <div onClick={() => setOpen(false)} className="flex flex-col gap-1">
+          <div onClick={() => setOpen(false)} className="flex flex-col gap-1 overflow-y-auto">
             {children}
           </div>
         </DialogPrimitive.Content>
